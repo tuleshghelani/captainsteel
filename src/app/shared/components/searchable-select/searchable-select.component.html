@@ -1,0 +1,39 @@
+<div class="searchable-select" [class.active]="isOpen">
+  <div class="select-trigger" (click)="toggleDropdown()">
+    <span class="selected-text">{{ getSelectedLabel() }}</span>
+    <i class="fas" [class.fa-chevron-down]="!isOpen" [class.fa-chevron-up]="isOpen"></i>
+  </div>
+  
+  <div class="select-dropdown" *ngIf="isOpen">
+    <div class="search-container">
+      <input 
+        type="text" 
+        class="search-input" 
+        [placeholder]="searchPlaceholder" 
+        [value]="searchText"
+        (input)="onSearch($event)"
+        (click)="$event.stopPropagation()"
+      >
+      <i class="fas fa-search search-icon"></i>
+    </div>
+    
+    <div class="options-container">
+      <div 
+        class="option" 
+        *ngFor="let option of filteredOptions"
+        (click)="selectOption(option)"
+        [class.selected]="isSelected(option)"
+      >
+        <div class="option-content">
+          <div class="checkbox" *ngIf="multiple">
+            <i class="fas fa-check" *ngIf="isSelected(option)"></i>
+          </div>
+          <span>{{ option[labelKey] }}</span>
+        </div>
+      </div>
+      <div class="no-results" *ngIf="filteredOptions.length === 0">
+        No results found
+      </div>
+    </div>
+  </div>
+</div> 

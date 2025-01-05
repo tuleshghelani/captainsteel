@@ -1,0 +1,293 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+
+import { ProductService } from '../../services/product.service';
+import { PurchaseService } from '../../services/purchase.service';
+import { CustomerService } from '../../services/customer.service';
+import { SnackbarService } from '../../shared/services/snackbar.service';
+import { LoaderComponent } from '../../shared/components/loader/loader.component';
+import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
+
+interface ProductForm {
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  discountPercentage: number;
+  discountAmount: number;
+  finalPrice: number;
+}
+
+@Component({
+  selector: 'app-add-purchase',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    LoaderComponent,
+    SearchableSelectComponent
+  ],
+  templateUrl: './add-purchase.component.html',
+  styleUrls: ['./add-purchase.component.scss']
+})
+export class AddPurchaseComponent implements OnInit, OnDestroy {
+  purchaseForm!: FormGroup;
+  products: any[] = [];
+  customers: any[] = [];
+  loading = false;
+  isLoadingProducts = false;
+  isLoadingCustomers = false;
+  private destroy$ = new Subject<void>();
+
+  get productsFormArray() {
+    return this.purchaseForm.get('products') as FormArray;
+  }
+
+  constructor(
+    private fb: FormBuilder,
+    private productService: ProductService,
+    private customerService: CustomerService,
+    private purchaseService: PurchaseService,
+    private snackbar: SnackbarService
+  ) {
+    this.initForm();
+  }
+
+  ngOnInit() {
+    this.loadProducts();
+    this.loadCustomers();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initForm() {
+    const now = new Date();
+    const localISOString = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
+      .toISOString()
+      .slice(0, 16);
+
+    this.purchaseForm = this.fb.group({
+      customerId: ['', Validators.required],
+      purchaseDate: [localISOString, Validators.required],
+      invoiceNumber: ['', Validators.required],
+      products: this.fb.array([])
+    });
+
+    // Add initial product form group
+    this.addProduct();
+  }
+
+  private createProductFormGroup(): FormGroup {
+    return this.fb.group({
+      productId: ['', Validators.required],
+      quantity: ['', [Validators.required, Validators.min(1)]],
+      unitPrice: ['', [Validators.required, Validators.min(0.01)]],
+      discountPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      discountAmount: [0, [Validators.required, Validators.min(0)]],
+      finalPrice: [{ value: 0, disabled: true }]
+    });
+  }
+
+  addProduct() {
+    const productGroup = this.createProductFormGroup();
+    this.setupProductCalculations(productGroup, this.productsFormArray.length);
+    this.productsFormArray.push(productGroup);
+  }
+
+  removeProduct(index: number) {
+    if (this.productsFormArray.length > 1) {
+      this.productsFormArray.removeAt(index);
+      this.calculateTotalAmount();
+    }
+  }
+
+  private setupProductCalculations(group: FormGroup, index: number) {
+    const fields = ['quantity', 'unitPrice', 'discountPercentage', 'discountAmount'];
+    
+    fields.forEach(field => {
+      group.get(field)?.valueChanges
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.calculateProductDiscount(index);
+        });
+    });
+  }
+
+  private calculateProductDiscount(index: number) {
+    const group = this.productsFormArray.at(index) as FormGroup;
+    const values = {
+      quantity: group.get('quantity')?.value || 0,
+      unitPrice: group.get('unitPrice')?.value || 0,
+      discountPercentage: group.get('discountPercentage')?.value || 0,
+      discountAmount: group.get('discountAmount')?.value || 0,
+      finalPrice: 0
+    };
+
+    const totalPrice = values.quantity * values.unitPrice;
+    
+    if (values.discountAmount > 0) {
+      values.finalPrice = totalPrice - values.discountAmount;
+      values.discountPercentage = (values.discountAmount / totalPrice) * 100;
+    } else if (values.discountPercentage > 0) {
+      values.discountAmount = (totalPrice * values.discountPercentage) / 100;
+      values.finalPrice = totalPrice - values.discountAmount;
+    } else {
+      values.finalPrice = totalPrice;
+    }
+
+    group.patchValue({
+      discountAmount: values.discountAmount,
+      discountPercentage: values.discountPercentage,
+      finalPrice: values.finalPrice
+    }, { emitEvent: false });
+
+    this.calculateTotalAmount();
+  }
+
+  getTotalAmount(): number {
+    return this.productsFormArray.controls
+      .reduce((total, group: any) => total + (group.get('finalPrice').value || 0), 0);
+  }
+
+  private loadProducts(): void {
+    this.isLoadingProducts = true;
+    this.productService.getProducts({ status: 'A' }).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.products = response.data;
+        }
+        this.isLoadingProducts = false;
+      },
+      error: (error) => {
+        this.snackbar.error('Failed to load products');
+        this.isLoadingProducts = false;
+      }
+    });
+  }
+
+  refreshProducts(): void {
+    this.isLoadingProducts = true;
+    this.productService.refreshProducts().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.products = response.data;
+          this.snackbar.success('Products refreshed successfully');
+        }
+        this.isLoadingProducts = false;
+      },
+      error: (error) => {
+        this.snackbar.error('Failed to refresh products');
+        this.isLoadingProducts = false;
+      }
+    });
+  }
+
+  private loadCustomers(): void {
+    this.isLoadingCustomers = true;
+    this.customerService.getCustomers({ status: 'A' }).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.customers = response.data;
+        }
+        this.isLoadingCustomers = false;
+      },
+      error: (error) => {
+        this.snackbar.error('Failed to load customers');
+        this.isLoadingCustomers = false;
+      }
+    });
+  }
+
+  refreshCustomers(): void {
+    this.isLoadingCustomers = true;
+    this.customerService.refreshCustomers().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.customers = response.data;
+        }
+        this.snackbar.success('Customers refreshed successfully');
+        this.isLoadingCustomers = false;
+      },
+      error: (error) => {
+        this.snackbar.error('Failed to load customers');
+        this.isLoadingCustomers = false;
+      }
+    });
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.purchaseForm.get(fieldName);
+    return field ? field.invalid && field.touched : false;
+  }
+
+  isProductFieldInvalid(index: number, fieldName: string): boolean {
+    const field = this.productsFormArray.at(index).get(fieldName);
+    return field ? field.invalid && field.touched : false;
+  }
+
+  resetForm() {
+    this.initForm();
+  }
+
+  onSubmit() {
+    if (this.purchaseForm.valid) {
+      this.loading = true;
+      const formData = this.preparePurchaseData();
+
+      this.purchaseService.createPurchase(formData).subscribe({
+        next: (response: any) => {
+          if (response?.success) {
+            this.snackbar.success('Purchase created successfully');
+            this.resetForm();
+          }
+          this.loading = false;
+        },
+        error: (error) => {
+          this.snackbar.error(error?.error?.message || 'Failed to create purchase');
+          this.loading = false;
+        },
+        complete: () => {
+          this.loading = false;
+        }
+      });
+    } else {
+      this.markFormGroupTouched(this.purchaseForm);
+    }
+  }
+
+  private preparePurchaseData() {
+    const formValue = this.purchaseForm.value;
+    return {
+      ...formValue,
+      products: formValue.products.map((product: ProductForm) => ({
+        ...product,
+        finalPrice: this.productsFormArray.at(formValue.products.indexOf(product)).get('finalPrice')?.value
+      }))
+    };
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup | FormArray) {
+    Object.values(formGroup.controls).forEach(control => {
+      if (control instanceof FormGroup || control instanceof FormArray) {
+        this.markFormGroupTouched(control);
+      } else {
+        control.markAsTouched();
+      }
+    });
+  }
+
+  private calculateTotalAmount(): void {
+    const total = this.productsFormArray.controls
+      .reduce((sum, group: any) => sum + (group.get('finalPrice').value || 0), 0);
+      
+    this.purchaseForm.patchValue({ totalAmount: total }, { emitEvent: false });
+  }
+
+  
+}

@@ -1,0 +1,20 @@
+// Theme Colors
+$primary: #FD7823;
+$secondary: #1C3F60;
+$background: #FDF5EC;
+$accent1: #FFC857;
+$accent2: #5A9E6F;
+$text-primary: #333333;
+$text-secondary: #767676;
+$supporting: #AEC6CF;
+
+:root {
+  --primary: #{$primary};
+  --secondary: #{$secondary};
+  --background: #{$background};
+  --accent1: #{$accent1};
+  --accent2: #{$accent2};
+  --text-primary: #{$text-primary};
+  --text-secondary: #{$text-secondary};
+  --supporting: #{$supporting};
+} 
