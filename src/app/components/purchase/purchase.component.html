@@ -16,21 +16,21 @@
         <div class="form-group">
           <div class="product-select-group">
             <app-searchable-select
-              formControlName="productId"
-              [options]="products"
+              formControlName="customerId"
+              [options]="customers"
               labelKey="name"
               valueKey="id"
-              [defaultOption]="{ label: 'All Products', value: '' }"
-              [searchPlaceholder]="'Search products...'"
+              [defaultOption]="{ label: 'All Customers', value: '' }"
+              [searchPlaceholder]="'Search customers...'"
             ></app-searchable-select>
             <button 
               type="button" 
               class="btn-icon refresh" 
-              (click)="refreshProducts()" 
-              [disabled]="isLoadingProducts"
-              title="Refresh Products"
+              (click)="refreshCustomers()" 
+              [disabled]="isLoadingCustomers"
+              title="Refresh Customers"
             >
-              <i class="fas" [ngClass]="isLoadingProducts ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
+              <i class="fas" [ngClass]="isLoadingCustomers ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
             </button>
           </div>
         </div>

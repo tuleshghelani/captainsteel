@@ -15,6 +15,7 @@ import { SearchableSelectComponent } from '../../shared/components/searchable-se
 import { DateUtils } from '../../shared/utils/date-utils';
 import { CacheService } from '../../shared/services/cache.service';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
+import { CustomerService } from '../../services/customer.service';
 
 @Component({
   selector: 'app-purchase',
@@ -49,10 +50,12 @@ export class PurchaseComponent implements OnInit {
   selectedPurchase: Purchase | null = null;
   products: Product[] = [];
   isLoadingProducts = false;
+  customers: any[] = [];
+  isLoadingCustomers = false;
 
   constructor(
     private purchaseService: PurchaseService,
-    private productService: ProductService,
+    private customerService: CustomerService,
     private fb: FormBuilder,
     private snackbar: SnackbarService,
     private dialog: MatDialog,
@@ -65,7 +68,7 @@ export class PurchaseComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPurchases();
-    this.loadProducts();
+    this.loadCustomers();
   }
 
   private initializeForm(): void {
@@ -140,35 +143,35 @@ export class PurchaseComponent implements OnInit {
     }
   }
 
-  private loadProducts(): void {
-    this.isLoadingProducts = true;
-    this.productService.getProducts({ status: 'A' }).subscribe({
+  private loadCustomers(): void {
+    this.isLoadingCustomers = true;
+    this.customerService.getCustomers({ status: 'A' }).subscribe({
       next: (response) => {
         if (response.success) {
-          this.products = response.data;
+          this.customers = response.data;
         }
-        this.isLoadingProducts = false;
+        this.isLoadingCustomers = false;
       },
       error: (error) => {
-        this.snackbar.error('Failed to load products');
-        this.isLoadingProducts = false;
+        this.snackbar.error('Failed to load customers');
+        this.isLoadingCustomers = false;
       }
     });
   }
 
-  refreshProducts(): void {
-    this.isLoadingProducts = true;
-    this.productService.refreshProducts().subscribe({
+  refreshCustomers(): void {
+    this.isLoadingCustomers = true;
+    this.customerService.refreshCustomers().subscribe({
       next: (response) => {
         if (response.success) {
-          this.products = response.data;
-          this.snackbar.success('Products refreshed successfully');
+          this.customers = response.data;
+          this.snackbar.success('Customers refreshed successfully');
         }
-        this.isLoadingProducts = false;
+        this.isLoadingCustomers = false;
       },
       error: (error) => {
-        this.snackbar.error('Failed to refresh products');
-        this.isLoadingProducts = false;
+        this.snackbar.error('Failed to refresh customers');
+        this.isLoadingCustomers = false;
       }
     });
   }
