@@ -173,7 +173,8 @@
     border: 1px solid var(--border-color);
     border-right: none;
     border-radius: var(--border-radius) 0 0 var(--border-radius);
-    padding: 0.5rem 0.75rem;
+    // padding: 0.5rem 0.75rem;
+    height: 38px;
     color: var(--text-secondary);
     min-width: 40px;
     display: flex;
@@ -291,5 +292,42 @@
     td, th {
       padding: 0.5rem;
     }
+  }
+}
+
+.form-field-container {
+  position: relative;
+  margin-bottom: 1rem;
+
+  .form-control, .input-group {
+    &.is-invalid {
+      border-color: var(--danger);
+      background-image: url("data:image/svg+xml,..."); // Error icon SVG
+    }
+  }
+}
+
+.products-table {
+  td {
+    padding-bottom: 1.5rem;
+    vertical-align: top;
+  }
+}
+
+.invalid-feedback {
+  color: var(--danger);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

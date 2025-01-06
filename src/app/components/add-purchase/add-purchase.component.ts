@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { formatDate } from '@angular/common';
 
 import { ProductService } from '../../services/product.service';
 import { PurchaseService } from '../../services/purchase.service';
@@ -67,14 +68,9 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
   }
 
   private initForm() {
-    const now = new Date();
-    const localISOString = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
-      .toISOString()
-      .slice(0, 16);
-
     this.purchaseForm = this.fb.group({
       customerId: ['', Validators.required],
-      purchaseDate: [localISOString, Validators.required],
+      purchaseDate: [formatDate(new Date(), 'yyyy-MM-dd', 'en'), Validators.required],
       invoiceNumber: ['', Validators.required],
       products: this.fb.array([])
     });
@@ -227,8 +223,23 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
   }
 
   isProductFieldInvalid(index: number, fieldName: string): boolean {
-    const field = this.productsFormArray.at(index).get(fieldName);
-    return field ? field.invalid && field.touched : false;
+    const control = this.productsFormArray.at(index).get(fieldName);
+    if (!control) return false;
+
+    const isInvalid = control.invalid && (control.dirty || control.touched);
+    
+    if (isInvalid) {
+      const errors = control.errors;
+      if (errors) {
+        if (errors['required']) return true;
+        if (errors['min'] && fieldName === 'quantity') return true;
+        if (errors['min'] && fieldName === 'unitPrice') return true;
+        if ((errors['min'] || errors['max']) && fieldName === 'discountPercentage') return true;
+        if (errors['min'] && fieldName === 'discountAmount') return true;
+      }
+    }
+    
+    return false;
   }
 
   resetForm() {
@@ -236,6 +247,8 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
+    this.markFormGroupTouched(this.purchaseForm);
+    
     if (this.purchaseForm.valid) {
       this.loading = true;
       const formData = this.preparePurchaseData();
@@ -251,13 +264,14 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.snackbar.error(error?.error?.message || 'Failed to create purchase');
           this.loading = false;
-        },
-        complete: () => {
-          this.loading = false;
         }
       });
     } else {
-      this.markFormGroupTouched(this.purchaseForm);
+      // Scroll to first error
+      const firstError = document.querySelector('.is-invalid');
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   }
 
@@ -265,6 +279,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
     const formValue = this.purchaseForm.value;
     return {
       ...formValue,
+      purchaseDate: formatDate(formValue.purchaseDate, 'dd-MM-yyyy', 'en'),
       products: formValue.products.map((product: ProductForm) => ({
         ...product,
         finalPrice: this.productsFormArray.at(formValue.products.indexOf(product)).get('finalPrice')?.value
@@ -278,6 +293,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
         this.markFormGroupTouched(control);
       } else {
         control.markAsTouched();
+        control.markAsDirty();
       }
     });
   }

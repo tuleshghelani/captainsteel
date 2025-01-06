@@ -48,7 +48,7 @@
               <i class="fas fa-calendar"></i> Purchase Date <span class="required">*</span>
             </label>
             <input 
-              type="datetime-local" 
+              type="date" 
               id="purchaseDate" 
               formControlName="purchaseDate" 
               class="form-control"
@@ -102,65 +102,92 @@
             <tbody>
               <tr *ngFor="let product of productsFormArray.controls; let i=index" [formGroupName]="i">
                 <td>
-                  <app-searchable-select
-                    formControlName="productId"
-                    [options]="products"
-                    labelKey="name"
-                    valueKey="id"
-                    [placeholder]="'Select Product'"
-                    [searchPlaceholder]="'Search products...'"
-                    [class.is-invalid]="isProductFieldInvalid(i, 'productId')"
-                  ></app-searchable-select>
-                </td>
-                <td>
-                  <input 
-                    type="number" 
-                    formControlName="quantity" 
-                    class="form-control"
-                    [class.is-invalid]="isProductFieldInvalid(i, 'quantity')"
-                    placeholder="Qty"
-                    min="1"
-                  >
-                </td>
-                <td>
-                  <div class="input-group">
-                    <!-- <span class="input-group-text">₹</span> -->
-                    <input 
-                      type="number" 
-                      formControlName="unitPrice" 
-                      class="form-control"
-                      [class.is-invalid]="isProductFieldInvalid(i, 'unitPrice')"
-                      placeholder="Price"
-                      min="0.01"
-                      step="0.01"
-                    >
+                  <div class="form-field-container">
+                    <app-searchable-select
+                      formControlName="productId"
+                      [options]="products"
+                      labelKey="name"
+                      valueKey="id"
+                      [placeholder]="'Select Product'"
+                      [searchPlaceholder]="'Search products...'"
+                      [class.is-invalid]="isProductFieldInvalid(i, 'productId')"
+                    ></app-searchable-select>
+                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'productId')">
+                      Please select a product
+                    </div>
                   </div>
                 </td>
                 <td>
-                  <div class="input-group">
+                  <div class="form-field-container">
                     <input 
                       type="number" 
-                      formControlName="discountPercentage" 
+                      formControlName="quantity" 
                       class="form-control"
-                      placeholder="%"
-                      min="0"
-                      max="100"
-                      step="0.01"
+                      [class.is-invalid]="isProductFieldInvalid(i, 'quantity')"
+                      placeholder="Qty"
+                      min="1"
                     >
-                    <!-- <span class="input-group-text">%</span> -->
+                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'quantity')">
+                      Quantity must be 1 or greater
+                    </div>
                   </div>
                 </td>
                 <td>
-                  <div class="input-group">
-                    <!-- <span class="input-group-text">₹</span> -->
-                    <input 
-                      type="number" 
-                      formControlName="discountAmount" 
-                      class="form-control"
-                      placeholder="Amount"
-                      min="0"
-                      step="0.01"
-                    >
+                  <div class="form-field-container">
+                    <div class="input-group">
+                      <span class="input-group-text">₹</span>
+                      <input 
+                        type="number" 
+                        formControlName="unitPrice" 
+                        class="form-control"
+                        [class.is-invalid]="isProductFieldInvalid(i, 'unitPrice')"
+                        placeholder="Price"
+                        min="0.01"
+                        step="0.01"
+                      >
+                    </div>
+                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'unitPrice')">
+                      Unit price must be greater than 0
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="form-field-container">
+                    <div class="input-group">
+                      <input 
+                        type="number" 
+                        formControlName="discountPercentage" 
+                        class="form-control"
+                        [class.is-invalid]="isProductFieldInvalid(i, 'discountPercentage')"
+                        placeholder="%"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                      >
+                      <span class="input-group-text">%</span>
+                    </div>
+                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'discountPercentage')">
+                      Discount must be between 0 and 100
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="form-field-container">
+                    <div class="input-group">
+                      <span class="input-group-text">₹</span>
+                      <input 
+                        type="number" 
+                        formControlName="discountAmount" 
+                        class="form-control"
+                        [class.is-invalid]="isProductFieldInvalid(i, 'discountAmount')"
+                        placeholder="Amount"
+                        min="0"
+                        step="0.01"
+                      >
+                    </div>
+                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'discountAmount')">
+                      Discount amount must be 0 or greater
+                    </div>
                   </div>
                 </td>
                 <td>
@@ -196,11 +223,11 @@
       <div class="purchase-summary">
         <div class="summary-item">
           <span>Total Products:</span>
-          <strong>{{ products.length }}</strong>
+          <strong>{{ productsFormArray.length }}</strong>
         </div>
         <div class="summary-item">
           <span>Total Amount:</span>
-          <strong>{{ getTotalAmount() | number:'1.2-2' }}</strong>
+          <strong>₹{{ getTotalAmount() | number:'1.2-2' }}</strong>
         </div>
       </div>
 
