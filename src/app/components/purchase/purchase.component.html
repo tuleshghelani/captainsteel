@@ -69,38 +69,22 @@
       <table class="table">
         <thead>
           <tr>
+            <th>No</th>
             <th>Invoice No.</th>
-            <th>Product</th>
-            <th>Category</th>
-            <th>Quantity</th>
-            <th>Unit Price</th>
-            <th>Other Expenses</th>
-            <th>Total Amount</th>
+            <th>Customer Name</th>
             <th>Purchase Date</th>
-            <th>Remaining Qty</th>
+            <th>Total Purchase Amount</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let purchase of purchases">
+          <tr *ngFor="let purchase of purchases; let index = index">
+            <td>{{ startIndex + index + 1 }}</td>
             <td>{{ purchase.invoiceNumber }}</td>
-            <td>{{ purchase.productName }}</td>
-            <td>{{ purchase.categoryName }}</td>
-            <td>{{ purchase.quantity }}</td>
-            <td>{{ purchase.unitPrice  }}</td>
-            <td>{{ purchase.otherExpenses  }}</td>
-            <td>{{ purchase.totalAmount  }}</td>
-            <td>{{ purchase.purchaseDate |  date:'medium' }}</td>
-            <td>{{ purchase.remainingQuantity  }}</td>
+            <td>{{ purchase.customerName }}</td>
+            <td>{{ purchase.purchaseDate |  date:'dd-MM-yyyy' }}</td>
+            <td>{{ purchase.totalPurchaseAmount  }}</td>
             <td class="actions">
-              <button 
-                class="btn-icon sale" 
-                (click)="openSaleModal(purchase)"
-                [disabled]="purchase.remainingQuantity === 0"
-                title="Create Sale"
-              >
-                <i class="fas fa-shopping-cart"></i>
-              </button>
               <button 
                 class="btn-icon delete" 
                 (click)="deletePurchase(purchase.id!)"

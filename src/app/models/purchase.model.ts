@@ -16,6 +16,8 @@ export interface Purchase {
   customerId: number;
   purchaseDate: string;
   invoiceNumber: string;
+  customerName?: string;
+  totalPurchaseAmount?: number;
   products: PurchaseProduct[];
   totalAmount: number;
   totalProducts: number;
