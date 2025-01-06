@@ -82,7 +82,9 @@ export class PurchaseComponent implements OnInit {
     const params = {
       currentPage: this.currentPage,
       perPageRecord: this.pageSize,
-      ...this.searchForm.value
+      startDate: this.searchForm.value.startDate ? this.dateUtils.formatDate(this.searchForm.value.startDate) : '',
+      endDate: this.searchForm.value.endDate ? this.dateUtils.formatDate(this.searchForm.value.endDate) : '',
+      ...this.searchForm.value,
     };
 
     this.purchaseService.searchPurchases(params).subscribe({
