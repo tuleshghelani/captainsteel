@@ -120,26 +120,35 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
     const values = {
       quantity: group.get('quantity')?.value || 0,
       unitPrice: group.get('unitPrice')?.value || 0,
-      discountPercentage: group.get('discountPercentage')?.value || 0,
-      discountAmount: group.get('discountAmount')?.value || 0,
+      discountPercentage: group.get('discountPercentage')?.value,
+      discountAmount: group.get('discountAmount')?.value,
       finalPrice: 0
     };
 
     const totalPrice = values.quantity * values.unitPrice;
     
-    if (values.discountAmount > 0) {
+    // Determine which field was last changed
+    const lastChangedField = document.activeElement?.getAttribute('formcontrolname');
+
+    if (lastChangedField === 'discountPercentage' || (!lastChangedField && values.discountPercentage !== undefined)) {
+      // Calculate amount based on percentage
+      values.discountAmount = (totalPrice * (values.discountPercentage || 0)) / 100;
       values.finalPrice = totalPrice - values.discountAmount;
-      values.discountPercentage = (values.discountAmount / totalPrice) * 100;
-    } else if (values.discountPercentage > 0) {
-      values.discountAmount = (totalPrice * values.discountPercentage) / 100;
-      values.finalPrice = totalPrice - values.discountAmount;
-    } else {
+    } 
+    else if (lastChangedField === 'discountAmount' || (!lastChangedField && values.discountAmount !== undefined)) {
+      // Calculate percentage based on amount
+      values.discountPercentage = totalPrice > 0 ? ((values.discountAmount || 0) / totalPrice) * 100 : 0;
+      values.finalPrice = totalPrice - (values.discountAmount || 0);
+    }
+    else {
       values.finalPrice = totalPrice;
+      values.discountAmount = 0;
+      values.discountPercentage = 0;
     }
 
     group.patchValue({
-      discountAmount: values.discountAmount,
-      discountPercentage: values.discountPercentage,
+      discountAmount: values.discountAmount || 0,
+      discountPercentage: values.discountPercentage || 0,
       finalPrice: values.finalPrice
     }, { emitEvent: false });
 
