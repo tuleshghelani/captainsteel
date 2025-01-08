@@ -74,7 +74,7 @@ export class PurchaseComponent implements OnInit {
   private initializeForm(): void {
     this.searchForm = this.fb.group({
       search: [''],
-      productId: [''],
+      customerId: [''],
       startDate: [''],
       endDate: ['']
     });
