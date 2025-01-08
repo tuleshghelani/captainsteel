@@ -31,7 +31,15 @@ export class EmployeeService {
   }
 
   getEmployeeDetail(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/detail`, { id });
+    return this.http.post<any>(`${this.apiUrl}/detail`, { id })
+      .pipe(
+        tap(response => {
+          if (response.success) {
+            const encryptedData = this.encryptionService.encrypt(JSON.stringify(response.data));
+            localStorage.setItem('selectedEmployee', encryptedData);
+          }
+        })
+      );
   }
 
   // getAllEmployees(): Observable<any> {

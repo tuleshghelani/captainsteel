@@ -124,7 +124,7 @@ export class CreateAttendanceComponent implements OnInit {
           this.isLoading = false;
         },
         error: (error) => {
-          this.snackbar.error(error.message || 'Failed to create attendance');
+          this.snackbar.error(error?.error?.message || 'Failed to create attendance');
           this.isLoading = false;
         }
       });

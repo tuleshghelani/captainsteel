@@ -14,4 +14,12 @@ export class AttendanceService {
   createAttendance(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/create`, data);
   }
+
+  searchAttendance(params: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/search`, params);
+  }
+
+  deleteAttendances(attendanceIds: number[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/delete`, { attendanceIds });
+  }
 } 

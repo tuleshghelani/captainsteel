@@ -24,13 +24,13 @@
     </div>
   
     <div class="action-buttons">
-      <button routerLink="/employee/create" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Add Employee
+      <button routerLink="/attendance/create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Attendance
       </button>
     </div>
   
     <div class="employees-list card">
-      <h2>Employees</h2>
+      <h2>Attendance</h2>
       <div class="table-wrapper">
         <div class="table-container">
           <app-loader [show]="isLoading"></app-loader>
@@ -63,7 +63,7 @@
                   <td class="actions">
                     <button 
                       class="btn-icon view" 
-                      [routerLink]="['/attendance/details']"
+                      (click)="viewAttendanceDetails(employee.id)"
                       title="Employee Attendance details"
                     >
                       <i class="fas fa-eye"></i>

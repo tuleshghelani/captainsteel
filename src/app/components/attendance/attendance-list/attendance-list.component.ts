@@ -8,6 +8,9 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 import { SnackbarService } from '../../../shared/services/snackbar.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
+import { EncryptionService } from '../../../shared/services/encryption.service';
 
 
 
@@ -24,7 +27,8 @@ import { Component } from '@angular/core';
     LoaderComponent,
     RouterLink,
     RouterModule,
-    PaginationComponent 
+    PaginationComponent,
+    SearchableSelectComponent
   ]
 })
 export class AttendanceListComponent {
@@ -44,7 +48,9 @@ export class AttendanceListComponent {
   constructor(
     private employeeService: EmployeeService,
     private fb: FormBuilder,
-    private snackbar: SnackbarService
+    private snackbar: SnackbarService,
+    private router: Router,
+    private encryptionService: EncryptionService
   ) {
     this.initializeForm();
   }
@@ -133,6 +139,24 @@ export class AttendanceListComponent {
   private updatePaginationIndexes(): void {
     this.startIndex = this.currentPage * this.pageSize;
     this.endIndex = Math.min(this.startIndex + this.pageSize, this.totalElements);
+  }
+
+  viewAttendanceDetails(employeeId: number): void {
+    this.isLoading = true;
+    this.employeeService.getEmployeeDetail(employeeId).subscribe({
+      next: (response) => {
+        if (response.success) {
+          const encryptedData = this.encryptionService.encrypt(JSON.stringify(response.data));
+          localStorage.setItem('selectedEmployee', encryptedData);
+          this.router.navigate(['/attendance/details']);
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.snackbar.error(error.message || 'Failed to load employee details');
+        this.isLoading = false;
+      }
+    });
   }
 
 }
