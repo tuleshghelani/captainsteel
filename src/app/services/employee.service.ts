@@ -1,16 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Employee, EmployeeResponse, EmployeeSearchRequest } from '../models/employee.model';
+import { EncryptionService } from '../shared/services/encryption.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EmployeeService {
+  private readonly CACHE_KEY = 'active_employees';
   private apiUrl = `${environment.apiUrl}/api/employees`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private encryptionService: EncryptionService) {}
 
   searchEmployees(params: EmployeeSearchRequest): Observable<EmployeeResponse> {
     return this.http.post<EmployeeResponse>(`${this.apiUrl}/search`, params);
@@ -32,7 +34,32 @@ export class EmployeeService {
     return this.http.post(`${this.apiUrl}/detail`, { id });
   }
 
+  // getAllEmployees(): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/all`, {});
+  // }  
+
   getAllEmployees(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/all`, {});
+    const encryptedData = localStorage.getItem(this.CACHE_KEY);
+      if (encryptedData) {
+        const decryptedData = this.encryptionService.decrypt(encryptedData);
+        if (decryptedData) {
+          return of(decryptedData);
+        }
+      }
+
+      return this.http.post<any>(`${this.apiUrl}/all`, {
+    }).pipe(
+      tap(response => {
+        if (response.success) {
+          const encryptedData = this.encryptionService.encrypt(response);
+          localStorage.setItem(this.CACHE_KEY, encryptedData);
+        }
+      })
+    );
+  }
+
+  refreshEmployees(): Observable<any> {
+    localStorage.removeItem(this.CACHE_KEY);
+    return this.getAllEmployees();
   }
 } 

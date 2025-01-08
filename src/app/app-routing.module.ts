@@ -19,6 +19,9 @@ import { EmployeeFormComponent } from './components/employee/employee-form/emplo
 import { EmployeeOrderListComponent } from './components/employee-order/employee-order-list/employee-order-list.component';
 import { EmployeeOrderFormComponent } from './components/employee-order/employee-order-form/employee-order-form.component';
 import { DailyProfitComponent } from './components/all-profits/daily-profit/daily-profit.component';
+import { CreateAttendanceComponent } from './components/attendance/create-attendance/create-attendance.component';
+import { AttendanceListComponent } from './components/attendance/attendance-list/attendance-list.component';
+import { AttendanceDetailComponent } from './components/attendance/attendance-detail/attendance-detail.component';
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -120,6 +123,21 @@ const routes: Routes = [
   {
     path: 'employee-order/edit/:id',
     component: EmployeeOrderFormComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'attendance',
+    component: AttendanceListComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'attendance/create',
+    component: CreateAttendanceComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'attendance/details',
+    component: AttendanceDetailComponent,
     canActivate: [AuthGuard]
   },
   {
