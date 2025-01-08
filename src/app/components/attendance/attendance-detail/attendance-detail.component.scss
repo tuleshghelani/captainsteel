@@ -239,3 +239,12 @@ input[type="checkbox"] {
   height: 16px;
   cursor: pointer;
 }
+
+.calendar-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--background);
+  border-radius: 12px;
+  margin: 1rem 0;
+}

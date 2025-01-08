@@ -12,6 +12,7 @@ import { FormsModule, ReactiveFormsModule, FormGroup, FormBuilder, Validators, F
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { merge } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { CalendarViewComponent } from '../../../shared/components/calendar-view/calendar-view.component';
 
 @Component({
   selector: 'app-attendance-detail',
@@ -25,7 +26,8 @@ import { debounceTime } from 'rxjs/operators';
     PaginationComponent,
     FormsModule,
     ReactiveFormsModule,
-    ConfirmModalComponent
+    ConfirmModalComponent,
+    CalendarViewComponent
   ]
 })
 export class AttendanceDetailComponent implements OnInit {
@@ -47,6 +49,7 @@ export class AttendanceDetailComponent implements OnInit {
   dateFilterForm!: FormGroup;
   startDate = new FormControl('');
   endDate = new FormControl('');
+  attendanceDates: string[] = [];
 
   constructor(
     private employeeService: EmployeeService,
@@ -81,13 +84,20 @@ export class AttendanceDetailComponent implements OnInit {
 
   private initializeDateFilter(): void {
     const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    
+    // Always set to first day of current month
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
 
-    this.startDate.setValue(this.formatDateForInput(firstDay));
-    this.endDate.setValue(this.formatDateForInput(lastDay));
+    // Format dates properly for input
+    const formattedFirstDay = this.formatDateForInput(firstDay);
+    const formattedLastDay = this.formatDateForInput(lastDay);
 
-    // Subscribe to date changes
+    this.startDate.setValue(formattedFirstDay);
+    this.endDate.setValue(formattedLastDay);
+
     merge(this.startDate.valueChanges, this.endDate.valueChanges)
       .pipe(debounceTime(300))
       .subscribe(() => {
@@ -99,7 +109,10 @@ export class AttendanceDetailComponent implements OnInit {
   }
 
   private formatDateForInput(date: Date): string {
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private formatDateForApi(dateStr: string): string {
@@ -121,6 +134,9 @@ export class AttendanceDetailComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.attendanceRecords = response.data.content;
+          this.attendanceDates = this.attendanceRecords.map(record => 
+            this.formatDateForApi(record.startDateTime)
+          );
           this.totalPages = response.data.totalPages;
           this.totalElements = response.data.totalElements;
         }
@@ -193,5 +209,9 @@ export class AttendanceDetailComponent implements OnInit {
 
   onCancelDelete(): void {
     this.showDeleteModal = false;
+  }
+
+  getCurrentMonth(): Date {
+    return this.startDate.value ? new Date(this.startDate.value) : new Date();
   }
 }

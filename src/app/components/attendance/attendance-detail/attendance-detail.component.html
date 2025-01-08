@@ -90,6 +90,13 @@
       </button>
     </div>
 
+    <div class="calendar-wrapper">
+      <app-calendar-view
+        [attendanceRecords]="attendanceRecords"
+        [currentMonth]="getCurrentMonth()"
+      ></app-calendar-view>
+    </div>
+
     <div class="table-wrapper">
       <div class="table-responsive">
         <table class="table">
