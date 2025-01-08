@@ -8,8 +8,10 @@ import { Router } from '@angular/router';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SnackbarService } from '../../../shared/services/snackbar.service';
 import { EncryptionService } from '../../../shared/services/encryption.service';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { merge } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-attendance-detail',
@@ -42,14 +44,20 @@ export class AttendanceDetailComponent implements OnInit {
   selectedAttendances: number[] = [];
   selectAll: boolean = false;
   showDeleteModal = false;
+  dateFilterForm!: FormGroup;
+  startDate = new FormControl('');
+  endDate = new FormControl('');
 
   constructor(
     private employeeService: EmployeeService,
     private attendanceService: AttendanceService,
     private router: Router,
     private snackbar: SnackbarService,
-    private encryptionService: EncryptionService
-  ) {}
+    private encryptionService: EncryptionService,
+    private fb: FormBuilder
+  ) {
+    this.initializeDateFilter();
+  }
 
   ngOnInit(): void {
     this.loadEmployeeDetails();
@@ -71,12 +79,42 @@ export class AttendanceDetailComponent implements OnInit {
     }
   }
 
+  private initializeDateFilter(): void {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    this.startDate.setValue(this.formatDateForInput(firstDay));
+    this.endDate.setValue(this.formatDateForInput(lastDay));
+
+    // Subscribe to date changes
+    merge(this.startDate.valueChanges, this.endDate.valueChanges)
+      .pipe(debounceTime(300))
+      .subscribe(() => {
+        if (this.startDate.value && this.endDate.value) {
+          this.currentPage = 0;
+          this.loadAttendanceRecords();
+        }
+      });
+  }
+
+  private formatDateForInput(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  private formatDateForApi(dateStr: string): string {
+    const date = new Date(dateStr);
+    return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+  }
+
   private loadAttendanceRecords(): void {
     this.isLoading = true;
     const params = {
       employeeId: this.employee.id,
       page: this.currentPage,
-      size: this.pageSize
+      size: this.pageSize,
+      startDate: this.formatDateForApi(this.startDate.value || ''),
+      endDate: this.formatDateForApi(this.endDate.value || '')
     };
 
     this.attendanceService.searchAttendance(params).subscribe({

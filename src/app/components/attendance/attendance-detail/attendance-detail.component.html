@@ -51,9 +51,36 @@
 
   <div class="attendance-records card">
     <div class="header-actions">
-      <h2>
-        <i class="fas fa-clock"></i> Attendance Records
-      </h2>
+      <div class="header-left">
+        <h2>
+          <i class="fas fa-clock"></i> Attendance Records
+        </h2>
+        <br>
+        <div class="date-filter">
+          <div class="date-inputs">
+            <div class="form-group">
+              <label>
+                <i class="fas fa-calendar-alt"></i> From Date
+              </label>
+              <input 
+                type="date" 
+                [formControl]="startDate"
+                class="form-control"
+              >
+            </div>
+            <div class="form-group">
+              <label>
+                <i class="fas fa-calendar-alt"></i> To Date
+              </label>
+              <input 
+                type="date" 
+                [formControl]="endDate"
+                class="form-control"
+              >
+            </div>
+          </div>
+        </div>
+      </div>
       <button 
         [ngClass]="{'show': selectedAttendances.length > 0}"
         class="btn btn-danger delete-btn"
