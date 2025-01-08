@@ -6,7 +6,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 12px;
+    padding: 12px;
     background: white;
     border: 1px solid var(--supporting);
     border-radius: 4px;
@@ -50,7 +50,7 @@
     z-index: 1000;
     max-height: 300px;
     border: 1px solid var(--supporting);
-
+    width: fit-content;
     
     .search-container {
       padding: 8px;

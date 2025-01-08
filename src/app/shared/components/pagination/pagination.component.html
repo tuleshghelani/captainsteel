@@ -2,7 +2,7 @@
     <div class="page-size-selector">
         <label>Show entries:</label>
         <select 
-            class="form-control" 
+            class="form-control mb-0 text-center" 
             [ngModel]="pageSize" 
             (ngModelChange)="onPageSizeChange($event)"
         >
@@ -75,7 +75,8 @@
         <div class="go-to-page">
             <input 
                 type="number"
-                class="form-control"
+                class="form-control mb-0 text-center"
+                style="width: fit-content;"
                 [(ngModel)]="goToPageInput"
                 placeholder="Page"
                 min="1"

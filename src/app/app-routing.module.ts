@@ -22,6 +22,8 @@ import { DailyProfitComponent } from './components/all-profits/daily-profit/dail
 import { CreateAttendanceComponent } from './components/attendance/create-attendance/create-attendance.component';
 import { AttendanceListComponent } from './components/attendance/attendance-list/attendance-list.component';
 import { AttendanceDetailComponent } from './components/attendance/attendance-detail/attendance-detail.component';
+import { QuotationComponent } from './components/quotation/quotation.component';
+import { AddQuotationComponent } from './components/add-quotation/add-quotation.component';
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -144,12 +146,22 @@ const routes: Routes = [
     path: 'daily-profit',
     component: DailyProfitComponent,
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'quotation',
+    component: QuotationComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'quotation/create',
+    component: AddQuotationComponent,
+    canActivate: [AuthGuard]
   },  
   {
     path: '**',
     redirectTo: '/login',
     pathMatch: 'full'
-  }
+  },
 ];
 
 @NgModule({

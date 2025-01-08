@@ -19,12 +19,16 @@ import { LoaderComponent } from './shared/components/loader/loader.component';
 import { AddCombinedPurchaseSaleComponent } from './components/add-combined-purchase-sale/add-combined-purchase-sale.component';
 import { TransportComponent } from './components/Transports/transport/transport.component';
 import { TransportListComponent } from './components/Transports/transport-list/transport-list.component';
+// import { QuotationComponent } from './components/quotation/quotation.component';
+// import { AddQuotationComponent } from './components/add-quotation/add-quotation.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     HeaderComponent,
+    // QuotationComponent,
+    // AddQuotationComponent,
     // ProductComponent,
     // PurchaseComponent,
     // SalesComponent
