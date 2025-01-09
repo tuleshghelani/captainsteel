@@ -103,6 +103,7 @@
               <td>{{ quotation.totalAmount | currency:'INR' }}</td>
               <td>
                 <span class="status-badge" [ngClass]="getStatusClass(quotation.status)">
+                  <i class="fas" [ngClass]="getStatusIcon(quotation.status)"></i>
                   {{ getStatusLabel(quotation.status) }}
                 </span>
               </td>

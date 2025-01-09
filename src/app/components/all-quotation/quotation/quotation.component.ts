@@ -219,4 +219,16 @@ export class QuotationComponent {
       }
     });
   }
+
+  getStatusIcon(status: string): string {
+    const statusIcons: { [key: string]: string } = {
+      Q: 'fa-file-alt',         // Quote
+      A: 'fa-check-circle',     // Accepted
+      D: 'fa-times-circle',     // Declined
+      R: 'fa-clock',            // Ready
+      P: 'fa-spinner fa-spin',  // Processing
+      C: 'fa-check-double'      // Completed
+    };
+    return statusIcons[status] || 'fa-question-circle';
+  }
 }

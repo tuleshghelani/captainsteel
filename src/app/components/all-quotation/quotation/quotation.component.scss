@@ -307,46 +307,67 @@
   }
   
   .status-badge {
-    padding: 0.25rem 0.75rem;
+    padding: 0.5rem 1rem;
     border-radius: var(--border-radius);
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     text-align: center;
-    display: inline-block;
-    min-width: 100px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    gap: 0.5rem;
+  
+    i {
+      font-size: 1rem;
+    }
+  
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    }
   
     &.status-quote {
       background-color: var(--info-light);
       color: var(--info);
+      border: 1px solid var(--info);
     }
   
     &.status-accepted {
       background-color: var(--success-light);
       color: var(--success);
+      border: 1px solid var(--success);
     }
   
     &.status-declined {
       background-color: var(--danger-light);
       color: var(--danger);
+      border: 1px solid var(--danger);
     }
   
     &.status-ready {
       background-color: var(--warning-light);
       color: var(--warning);
+      border: 1px solid var(--warning);
     }
   
     &.status-processing {
       background-color: var(--primary-light);
       color: var(--primary);
+      border: 1px solid var(--primary);
     }
   
     &.status-completed {
       background-color: var(--success-light);
       color: var(--success);
+      border: 1px solid var(--success);
     }
   
     &.status-default {
       background-color: var(--gray-light);
       color: var(--gray);
+      border: 1px solid var(--gray);
     }
   }
