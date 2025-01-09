@@ -31,3 +31,9 @@ export interface QuotationResponse {
   success: boolean;
   message: string;
 }
+
+export interface StatusOption {
+  label: string;
+  value: string;
+  disabled: boolean;
+}

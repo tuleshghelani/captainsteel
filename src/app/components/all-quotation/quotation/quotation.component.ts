@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { QuotationService } from '../../../services/quotation.service';
 import { CustomerService } from '../../../services/customer.service';
@@ -12,7 +12,7 @@ import { SaleModalComponent } from '../../sale-modal/sale-modal.component';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { QuotationStatus } from '../../../models/quotation.model';
+import { QuotationStatus, StatusOption } from '../../../models/quotation.model';
 
 @Component({
   selector: 'app-quotation',
@@ -31,7 +31,7 @@ import { QuotationStatus } from '../../../models/quotation.model';
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss'
 })
-export class QuotationComponent {
+export class QuotationComponent implements OnInit {
   quotations: any[] = [];
   searchForm!: FormGroup;
   isLoading = false;
@@ -63,6 +63,7 @@ export class QuotationComponent {
   ){
     this.initializeForm();
     this.statusOptions = Object.entries(QuotationStatus).map(([key, value]) => ({ label: value, value: key }));
+    this.setupClickOutsideListener();
   }
 
   ngOnInit(): void {
@@ -230,5 +231,63 @@ export class QuotationComponent {
       C: 'fa-check-double'      // Completed
     };
     return statusIcons[status] || 'fa-question-circle';
+  }
+
+  private setupClickOutsideListener(): void {
+    document.addEventListener('click', (event: any) => {
+      const dropdowns = document.querySelectorAll('.status-container');
+      dropdowns.forEach(dropdown => {
+        if (!dropdown.contains(event.target)) {
+          this.quotations.forEach(q => q.showStatusDropdown = false);
+        }
+      });
+    });
+  }
+
+  toggleStatusDropdown(quotation: any): void {
+    event?.stopPropagation();
+    this.quotations.forEach(q => {
+      if (q !== quotation) q.showStatusDropdown = false;
+    });
+    quotation.showStatusDropdown = !quotation.showStatusDropdown;
+  }
+
+  canChangeStatus(status: string): boolean {
+    return ['Q', 'A', 'D'].includes(status);
+  }
+
+  updateStatus(quotation: any, newStatus: string): void {
+    if (!quotation || quotation.isUpdating) return;
+
+    quotation.isUpdating = true;
+    quotation.showStatusDropdown = false;
+    
+    this.quotationService.updateQuotationStatus(quotation.id, newStatus).subscribe({
+      next: () => {
+        quotation.status = newStatus;
+        this.snackbar.success('Status updated successfully');
+        quotation.isUpdating = false;
+      },
+      error: (error:any) => {
+        this.snackbar.error(error?.error?.message || 'Failed to update status');
+        quotation.isUpdating = false;
+      }
+    });
+  }
+  
+  getAvailableStatusOptions(currentStatus: string): StatusOption[] {
+    switch(currentStatus) {
+      case 'Q':
+        return [
+          { label: QuotationStatus.A, value: 'A', disabled: false },
+          { label: QuotationStatus.D, value: 'D', disabled: false }
+        ];
+      case 'A':
+        return [{ label: QuotationStatus.D, value: 'D', disabled: false }];
+      case 'D':
+        return [{ label: QuotationStatus.A, value: 'A', disabled: false }];
+      default:
+        return [];
+    }
   }
 }

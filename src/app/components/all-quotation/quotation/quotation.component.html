@@ -102,10 +102,31 @@
               <td>{{ quotation.validUntil |  date:'dd-MM-yyyy' }}</td>
               <td>{{ quotation.totalAmount | currency:'INR' }}</td>
               <td>
-                <span class="status-badge" [ngClass]="getStatusClass(quotation.status)">
-                  <i class="fas" [ngClass]="getStatusIcon(quotation.status)"></i>
-                  {{ getStatusLabel(quotation.status) }}
-                </span>
+                <div class="status-container">
+                  <span class="status-badge" [ngClass]="getStatusClass(quotation.status)">
+                    <i class="fas" [ngClass]="getStatusIcon(quotation.status)"></i>
+                    {{ getStatusLabel(quotation.status) }}
+                  </span>
+                  <button 
+                    class="btn-icon status-change" 
+                    (click)="toggleStatusDropdown(quotation)"
+                    *ngIf="canChangeStatus(quotation.status)"
+                    [disabled]="quotation.isUpdating"
+                  >
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="status-dropdown" *ngIf="quotation.showStatusDropdown">
+                    <div 
+                      class="status-option" 
+                      *ngFor="let option of getAvailableStatusOptions(quotation.status)"
+                      (click)="updateStatus(quotation, option.value)"
+                      [class.disabled]="option.disabled"
+                    >
+                      <i class="fas" [ngClass]="getStatusIcon(option.value)"></i>
+                      {{ option.label }}
+                    </div>
+                  </div>
+                </div>
               </td>
               <td class="actions">
                 <button 

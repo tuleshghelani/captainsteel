@@ -38,4 +38,8 @@ export class QuotationService {
       })
     );
   }
+
+  updateQuotationStatus(id: number, status: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/update-status`, { id, status });
+  }
 }
