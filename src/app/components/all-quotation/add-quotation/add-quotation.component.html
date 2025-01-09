@@ -11,7 +11,7 @@
       </h2>
     </div>
     
-    <form [formGroup]="quotationForm" (ngSubmit)="onSubmit()" class="quotation-form">
+    <form [formGroup]="quotationForm" (ngSubmit)="onSubmit()" (keydown.enter)="$event.preventDefault()" class="quotation-form">
       <!-- Header Section -->
       <div class="header-section">
         <div class="form-row">

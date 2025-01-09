@@ -372,39 +372,48 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   private checkForEdit(): void {
-    const encryptedData = localStorage.getItem('selectedQuotation');
-    if (encryptedData) {
-      try {
-        const quotationData = JSON.parse(this.encryptionService.decrypt(encryptedData));
-        this.quotationId = quotationData.id;
-        this.isEdit = true;
-        this.populateForm(quotationData);
-      } catch (error) {
-        this.snackbar.error('Invalid quotation data');
-      } finally {
-        localStorage.removeItem('selectedQuotation');
-      }
+    const quotationId = this.encryptionService.decrypt(localStorage.getItem('editQuotationId') || '');
+    if (quotationId) {
+      this.isLoading = true;
+      this.quotationService.getQuotationDetail(parseInt(quotationId)).subscribe({
+        next: (response) => {
+          console.log('Quotation response:', response);
+          if (response) {
+            this.quotationId = parseInt(quotationId);
+            this.isEdit = true;
+            this.populateForm(response.data);
+          }
+          this.isLoading = false;
+          // localStorage.removeItem('editQuotationId');
+        },
+        error: (error) => {
+          console.error('Error loading quotation details:', error);
+          this.snackbar.error('Failed to load quotation details');
+          this.isLoading = false;
+          localStorage.removeItem('editQuotationId');
+        }
+      });
     }
   }
 
   private populateForm(data: any): void {
     if (!data) return;
-
+  
     // Clear existing items first
     while (this.itemsFormArray.length) {
       this.itemsFormArray.removeAt(0);
     }
-
+  
     // Patch basic form values
     this.quotationForm.patchValue({
       customerName: data.customerName,
       customerId: data.customerId,
-      quoteDate: this.dateUtils.formatDateForApi(data.quoteDate),
-      validUntil: this.dateUtils.formatDateForApi(data.validUntil),
-      remarks: data.remarks,
-      termsConditions: data.termsConditions
+      quoteDate: data.quoteDate,
+      validUntil: data.validUntil,
+      remarks: data.remarks || '',
+      termsConditions: data.termsConditions || ''
     });
-
+  
     // Add items
     if (data.items && Array.isArray(data.items)) {
       data.items.forEach((item: any) => {

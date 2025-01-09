@@ -75,7 +75,7 @@
         </div>
       </form>
     </div>
-      <button routerLink="/quotation/create" class="btn btn-primary mb-2">Add Quotation</button>
+      <button class="btn btn-primary mb-2" (click)="addQuotation()">Add Quotation</button>
     <div class="quotations-list card">
       <h2>Quotations</h2>
   
@@ -144,13 +144,13 @@
                 >
                   <i class="fas" [ngClass]="quotation.isPrinting ? 'fa-spinner fa-spin' : 'fa-print'"></i>
                 </button>
-                <button 
+                <!-- <button 
                   class="btn-icon delete" 
                   (click)="deleteQuotation(quotation.id!)"
                   title="Delete quotation"
                 >
                   <i class="fas fa-trash"></i>
-                </button>
+                </button> -->
               </td>
             </tr>
           </tbody>

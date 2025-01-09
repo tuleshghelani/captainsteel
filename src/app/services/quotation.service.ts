@@ -18,8 +18,8 @@ export class QuotationService {
   }
 
   updateQuotation(id: number, data: any): Observable<any> {
-    data.id = id;
-    return this.http.put<any>(`${this.apiUrl}/create`, data);
+    data.quotationId = id;
+    return this.http.put<any>(`${this.apiUrl}/update`, data);
   }
 
   searchQuotations(params: any): Observable<QuotationResponse> {

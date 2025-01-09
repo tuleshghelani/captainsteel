@@ -296,24 +296,13 @@ export class QuotationComponent implements OnInit {
 
   editQuotation(id: number): void {
     if (!id) return;
-    
-    this.isLoading = true;
-    this.quotationService.getQuotationDetail(id).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          // Store the raw data without modifying it
-          const encryptedData = this.encryptionService.encrypt(JSON.stringify(response.data));
-          localStorage.setItem('selectedQuotation', encryptedData);
-          this.router.navigate(['/quotation/create']);
-        } else {
-          this.snackbar.error('Failed to load quotation details');
-        }
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.snackbar.error(error?.error?.message || 'Failed to load quotation details');
-        this.isLoading = false;
-      }
-    });
+    localStorage.setItem('editQuotationId', this.encryptionService.encrypt(id.toString()));
+    this.router.navigate(['/quotation/create']);
+  }
+
+  addQuotation(): void {
+    localStorage.removeItem('editQuotationId');
+    this.router.navigate(['/quotation/create']);
   }
 }
+
