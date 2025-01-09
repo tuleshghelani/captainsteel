@@ -6,7 +6,8 @@
   <div class="form-card">
     <div class="card-header">
       <h2 class="form-title">
-        <i class="fas fa-file-invoice"></i> Create New Quotation
+        <i class="fas" [ngClass]="isEdit ? 'fa-edit' : 'fa-plus'"></i>
+        {{ isEdit ? 'Edit' : 'Create New' }} Quotation
       </h2>
     </div>
     

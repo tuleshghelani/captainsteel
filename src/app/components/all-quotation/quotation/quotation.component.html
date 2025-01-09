@@ -130,6 +130,13 @@
               </td>
               <td class="actions">
                 <button 
+                  class="btn-icon edit" 
+                  (click)="editQuotation(quotation.id!)"
+                  title="Edit quotation"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button 
                   class="btn-icon print" 
                   (click)="generatePdf(quotation.id!, quotation)"
                   title="Print quotation"

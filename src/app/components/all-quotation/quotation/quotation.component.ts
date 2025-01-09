@@ -7,12 +7,13 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ModalService } from '../../../services/modal.service';
 import { DateUtils } from '../../../shared/utils/date-utils';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { SaleModalComponent } from '../../sale-modal/sale-modal.component';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { QuotationStatus, StatusOption } from '../../../models/quotation.model';
+import { EncryptionService } from '../../../shared/services/encryption.service';
 
 @Component({
   selector: 'app-quotation',
@@ -60,6 +61,8 @@ export class QuotationComponent implements OnInit {
     private dialog: MatDialog,
     private modalService: ModalService,
     private dateUtils: DateUtils,
+    private encryptionService: EncryptionService,
+    private router: Router
   ){
     this.initializeForm();
     this.statusOptions = Object.entries(QuotationStatus).map(([key, value]) => ({ label: value, value: key }));
@@ -289,5 +292,28 @@ export class QuotationComponent implements OnInit {
       default:
         return [];
     }
+  }
+
+  editQuotation(id: number): void {
+    if (!id) return;
+    
+    this.isLoading = true;
+    this.quotationService.getQuotationDetail(id).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          // Store the raw data without modifying it
+          const encryptedData = this.encryptionService.encrypt(JSON.stringify(response.data));
+          localStorage.setItem('selectedQuotation', encryptedData);
+          this.router.navigate(['/quotation/create']);
+        } else {
+          this.snackbar.error('Failed to load quotation details');
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.snackbar.error(error?.error?.message || 'Failed to load quotation details');
+        this.isLoading = false;
+      }
+    });
   }
 }

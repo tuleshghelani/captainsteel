@@ -17,6 +17,11 @@ export class QuotationService {
     return this.http.post<QuotationResponse>(`${this.apiUrl}/create`, quotation);
   }
 
+  updateQuotation(id: number, data: any): Observable<any> {
+    data.id = id;
+    return this.http.put<any>(`${this.apiUrl}/create`, data);
+  }
+
   searchQuotations(params: any): Observable<QuotationResponse> {
     return this.http.post<QuotationResponse>(`${this.apiUrl}/search`, params);
   }
@@ -41,5 +46,22 @@ export class QuotationService {
 
   updateQuotationStatus(id: number, status: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/update-status`, { id, status });
+  }
+
+  getQuotationDetail(id: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/detail`, { id }).pipe(
+      map(response => {
+        if (response && response.data) {
+          return {
+            success: true,
+            data: response.data
+          };
+        }
+        return {
+          success: false,
+          message: 'Invalid response format'
+        };
+      })
+    );
   }
 }

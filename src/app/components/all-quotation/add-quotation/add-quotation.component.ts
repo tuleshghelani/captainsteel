@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { formatDate } from '@angular/common';
 
@@ -12,6 +12,9 @@ import { SnackbarService } from '../../../shared/services/snackbar.service';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { EncryptionService } from '../../../shared/services/encryption.service';
+import { DateUtils } from '../../../shared/utils/date-utils';
+
 
 @Component({
   selector: 'app-add-quotation',
@@ -36,6 +39,9 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   isLoadingCustomers = false;
   minValidUntilDate: string;
   private destroy$ = new Subject<void>();
+  isLoading = false;
+  isEdit = false;
+  quotationId?: number;
 
   get itemsFormArray() {
     return this.quotationForm.get('items') as FormArray;
@@ -46,9 +52,12 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     private quotationService: QuotationService,
     private productService: ProductService,
     private customerService: CustomerService,
-    private snackbar: SnackbarService
+    private snackbar: SnackbarService,
+    private encryptionService: EncryptionService,
+    private dateUtils: DateUtils,
+    private router: Router
   ) {
-    const today = new Date();
+      const today = new Date();
     this.minValidUntilDate = formatDate(today, 'yyyy-MM-dd', 'en');
     this.initForm();
   }
@@ -57,6 +66,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.loadProducts();
     this.loadCustomers();
     this.setupCustomerNameSync();
+    this.checkForEdit();
   }
 
   ngOnDestroy() {
@@ -82,14 +92,14 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.addItem();
   }
 
-  private createItemFormGroup(): FormGroup {
+  private createItemFormGroup(item?: any): FormGroup {
     return this.fb.group({
-      productId: ['', Validators.required],
-      quantity: [1, [Validators.required, Validators.min(1)]],
-      unitPrice: ['', [Validators.required, Validators.min(0.01)]],
-      taxPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
-      discountPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
-      finalPrice: [{ value: 0, disabled: true }]
+      productId: [item?.productId || '', Validators.required],
+      quantity: [item?.quantity || 1, [Validators.required, Validators.min(1)]],
+      unitPrice: [item?.unitPrice || '', [Validators.required, Validators.min(0.01)]],
+      taxPercentage: [item?.taxPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      discountPercentage: [item?.discountPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      finalPrice: [{ value: item?.finalPrice || 0, disabled: true }]
     });
   }
 
@@ -327,28 +337,117 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     }
   }
 
-  onSubmit() {
-    if (this.quotationForm.valid) {
-      this.loading = true;
-      const formData = this.prepareQuotationData();
+  // onSubmit() {
+  //   if (this.quotationForm.valid) {
+  //     this.loading = true;
+  //     const formData = this.prepareQuotationData();
 
-      this.quotationService.createQuotation(formData).subscribe({
-        next: (response) => {
+  //     this.quotationService.createQuotation(formData).subscribe({
+  //       next: (response) => {
+  //         if (response.success) {
+  //           this.snackbar.success(response.message);
+  //           this.resetForm();
+  //         }
+  //         this.loading = false;
+  //       },
+  //       error: (error) => {
+  //         this.snackbar.error(error?.error?.message || 'Failed to create quotation');
+  //         this.loading = false;
+  //       }
+  //     });
+  //   }
+  // }
+
+  private prepareQuotationData() {
+    const formValue = this.quotationForm.value;
+    return {
+      ...formValue,
+      quoteDate: formatDate(formValue.quoteDate, 'yyyy-MM-dd', 'en'),
+      validUntil: formatDate(formValue.validUntil, 'yyyy-MM-dd', 'en'),
+      items: formValue.items.map((item: any) => ({
+        ...item,
+        finalPrice: this.itemsFormArray.at(formValue.items.indexOf(item)).get('finalPrice')?.value
+      }))
+    };
+  }
+
+  private checkForEdit(): void {
+    const encryptedData = localStorage.getItem('selectedQuotation');
+    if (encryptedData) {
+      try {
+        const quotationData = JSON.parse(this.encryptionService.decrypt(encryptedData));
+        this.quotationId = quotationData.id;
+        this.isEdit = true;
+        this.populateForm(quotationData);
+      } catch (error) {
+        this.snackbar.error('Invalid quotation data');
+      } finally {
+        localStorage.removeItem('selectedQuotation');
+      }
+    }
+  }
+
+  private populateForm(data: any): void {
+    if (!data) return;
+
+    // Clear existing items first
+    while (this.itemsFormArray.length) {
+      this.itemsFormArray.removeAt(0);
+    }
+
+    // Patch basic form values
+    this.quotationForm.patchValue({
+      customerName: data.customerName,
+      customerId: data.customerId,
+      quoteDate: this.dateUtils.formatDateForApi(data.quoteDate),
+      validUntil: this.dateUtils.formatDateForApi(data.validUntil),
+      remarks: data.remarks,
+      termsConditions: data.termsConditions
+    });
+
+    // Add items
+    if (data.items && Array.isArray(data.items)) {
+      data.items.forEach((item: any) => {
+        const itemGroup = this.createItemFormGroup({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          taxPercentage: item.taxPercentage,
+          discountPercentage: item.discountPercentage,
+          finalPrice: item.finalPrice
+        });
+        this.setupItemCalculations(itemGroup, this.itemsFormArray.length);
+        this.itemsFormArray.push(itemGroup);
+      });
+    }
+  }
+
+  onSubmit(): void {
+    if (this.quotationForm.valid) {
+      this.isLoading = true;
+      const formData = this.prepareFormData();
+      
+      const request$ = this.isEdit 
+        ? this.quotationService.updateQuotation(this.quotationId!, formData)
+        : this.quotationService.createQuotation(formData);
+
+      request$.subscribe({
+        next: (response: any) => {
           if (response.success) {
-            this.snackbar.success(response.message);
-            this.resetForm();
+            this.snackbar.success(`Quotation ${this.isEdit ? 'updated' : 'created'} successfully`);
+            this.router.navigate(['/quotation']);
           }
-          this.loading = false;
+          this.isLoading = false;
         },
-        error: (error) => {
-          this.snackbar.error(error?.error?.message || 'Failed to create quotation');
-          this.loading = false;
+        error: (error: any) => {
+          this.snackbar.error(error?.error?.message || `Failed to ${this.isEdit ? 'update' : 'create'} quotation`);
+          this.isLoading = false;
         }
       });
     }
   }
 
-  private prepareQuotationData() {
+  private prepareFormData() {
     const formValue = this.quotationForm.value;
     return {
       ...formValue,
