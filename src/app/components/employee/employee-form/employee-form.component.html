@@ -114,6 +114,40 @@
         </div>
       </div>
 
+      <div class="form-row">
+        <div class="form-group">
+          <label for="regularHrsPrice">
+            <i class="fa-solid fa-coins"></i> Regular Hours Price 
+          </label>
+          <input 
+            type="number" 
+            id="regularHrsPrice"
+            formControlName="regularHrsPrice"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('regularHrsPrice')"
+          >
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('regularHrsPrice')">
+            {{ getFieldError('regularHrsPrice') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="otHrsPrice">
+            <i class="fa-solid fa-coins"></i> OT Hours Price 
+          </label>
+          <input 
+            type="number" 
+            id="otHrsPrice"
+            formControlName="otHrsPrice"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('otHrsPrice')"
+          >
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('otHrsPrice')">
+            {{ getFieldError('otHrsPrice') }}
+          </div>
+        </div>
+      </div>
+
       <div class="form-group">
         <label for="address">
           <i class="fas fa-map-marker-alt"></i> Address 

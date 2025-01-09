@@ -50,7 +50,9 @@ export class EmployeeFormComponent implements OnInit {
       address: [null, []],
       designation: [null, []],
       department: [null, []],
-      status: ['A']
+      status: ['A'],
+      regularHrsPrice: [null, []],
+      otHrsPrice: [null, []],
     });
   }
 
@@ -66,7 +68,6 @@ export class EmployeeFormComponent implements OnInit {
     if (this.employeeForm.valid) {
       this.isLoading = true;
       const formData = { ...this.employeeForm.value };
-
       const request = this.isEditMode
         ? this.employeeService.updateEmployee(this.employeeId!, formData)
         : this.employeeService.createEmployee(formData);
@@ -107,7 +108,9 @@ export class EmployeeFormComponent implements OnInit {
             address: response.data.address,
             designation: response.data.designation,
             department: response.data.department,
-            status: response.data.status
+            status: response.data.status,
+            regularHrsPrice: response.data.regularHrsPrice,
+            otHrsPrice: response.data.otHrsPrice
           });
         }
         this.isLoading = false;

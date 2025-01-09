@@ -15,10 +15,10 @@ import { SearchableSelectComponent } from '../../shared/components/searchable-se
 interface ProductForm {
   productId: string;
   quantity: number;
-  unitPrice: number;
-  discountPercentage: number;
-  discountAmount: number;
+  coalNumber: number;
+  purchaseRate: number;
   finalPrice: number;
+  remarks: string
 }
 
 @Component({
@@ -83,10 +83,10 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
     return this.fb.group({
       productId: ['', Validators.required],
       quantity: ['', [Validators.required, Validators.min(1)]],
-      unitPrice: ['', [Validators.required, Validators.min(0.01)]],
-      discountPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
-      discountAmount: [0, [Validators.required, Validators.min(0)]],
-      finalPrice: [{ value: 0, disabled: true }]
+      coalNumber: ['', [Validators.required, Validators.min(1)]],
+      purchaseRate: ['', [Validators.required, Validators.min(0.01)]],
+      finalPrice: [{ value: 0, disabled: true }],
+      remarks:['', Validators.required]
     });
   }
 
@@ -104,7 +104,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
   }
 
   private setupProductCalculations(group: FormGroup, index: number) {
-    const fields = ['quantity', 'unitPrice', 'discountPercentage', 'discountAmount'];
+    const fields = ['quantity', 'purchaseRate'];
     
     fields.forEach(field => {
       group.get(field)?.valueChanges
@@ -119,36 +119,28 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
     const group = this.productsFormArray.at(index) as FormGroup;
     const values = {
       quantity: group.get('quantity')?.value || 0,
-      unitPrice: group.get('unitPrice')?.value || 0,
-      discountPercentage: group.get('discountPercentage')?.value,
-      discountAmount: group.get('discountAmount')?.value,
+      purchaseRate: group.get('purchaseRate')?.value || 0,
       finalPrice: 0
     };
 
-    const totalPrice = values.quantity * values.unitPrice;
+    const totalPrice = values.quantity * values.purchaseRate;
     
     // Determine which field was last changed
     const lastChangedField = document.activeElement?.getAttribute('formcontrolname');
 
-    if (lastChangedField === 'discountPercentage' || (!lastChangedField && values.discountPercentage !== undefined)) {
-      // Calculate amount based on percentage
-      values.discountAmount = (totalPrice * (values.discountPercentage || 0)) / 100;
-      values.finalPrice = totalPrice - values.discountAmount;
-    } 
-    else if (lastChangedField === 'discountAmount' || (!lastChangedField && values.discountAmount !== undefined)) {
+    // if (lastChangedField === 'discountPercentage' || (!lastChangedField)) {
+    //   // Calculate amount based on percentage
+    //   values.finalPrice = totalPrice;
+    // } 
+    // else if (lastChangedField === 'discountAmount' || !lastChangedField) {
       // Calculate percentage based on amount
-      values.discountPercentage = totalPrice > 0 ? ((values.discountAmount || 0) / totalPrice) * 100 : 0;
-      values.finalPrice = totalPrice - (values.discountAmount || 0);
-    }
-    else {
       values.finalPrice = totalPrice;
-      values.discountAmount = 0;
-      values.discountPercentage = 0;
-    }
+    // }
+    // else {
+    //   values.finalPrice = totalPrice;
+    // }
 
     group.patchValue({
-      discountAmount: values.discountAmount || 0,
-      discountPercentage: values.discountPercentage || 0,
       finalPrice: values.finalPrice
     }, { emitEvent: false });
 
@@ -242,9 +234,9 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
       if (errors) {
         if (errors['required']) return true;
         if (errors['min'] && fieldName === 'quantity') return true;
-        if (errors['min'] && fieldName === 'unitPrice') return true;
-        if ((errors['min'] || errors['max']) && fieldName === 'discountPercentage') return true;
-        if (errors['min'] && fieldName === 'discountAmount') return true;
+        if (errors['min'] && fieldName === 'purchaseRate') return true;
+        if (errors['min'] || errors['max']) return true;
+        if (errors['min']) return true;
       }
     }
     
@@ -261,7 +253,6 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
     if (this.purchaseForm.valid) {
       this.loading = true;
       const formData = this.preparePurchaseData();
-
       this.purchaseService.createPurchase(formData).subscribe({
         next: (response: any) => {
           if (response?.success) {

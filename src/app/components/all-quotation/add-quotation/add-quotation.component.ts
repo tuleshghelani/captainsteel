@@ -98,7 +98,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       quantity: [item?.quantity || 1, [Validators.required, Validators.min(1)]],
       unitPrice: [item?.unitPrice || '', [Validators.required, Validators.min(0.01)]],
       taxPercentage: [item?.taxPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
-      discountPercentage: [item?.discountPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      discountPercentage: [18, [Validators.required, Validators.min(0), Validators.max(100)]],
       finalPrice: [{ value: item?.finalPrice || 0, disabled: true }]
     });
   }
@@ -146,7 +146,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     const values = {
       quantity: group.get('quantity')?.value || 0,
       unitPrice: group.get('unitPrice')?.value || 0,
-      discountPercentage: group.get('discountPercentage')?.value || 0,
+      discountPercentage: 18,
       taxPercentage: group.get('taxPercentage')?.value || 0
     };
 

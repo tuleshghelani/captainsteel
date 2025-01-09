@@ -92,10 +92,10 @@
               <tr>
                 <th>Product Name</th>
                 <th>Quantity</th>
+                <th>Coal Number</th>
                 <th>Unit Price</th>
-                <th>Discount %</th>
-                <th>Discount Amount</th>
                 <th>Final Price</th>
+                <th>Remarks</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -134,59 +134,35 @@
                 </td>
                 <td>
                   <div class="form-field-container">
+                    <input 
+                      type="number" 
+                      formControlName="coalNumber" 
+                      class="form-control"
+                      [class.is-invalid]="isProductFieldInvalid(i, 'coalNumber')"
+                      placeholder="Qty"
+                      min="1"
+                    >
+                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'quantity')">
+                      Coal number must be 1 or greater
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="form-field-container">
                     <div class="input-group">
                       <span class="input-group-text">₹</span>
                       <input 
                         type="number" 
-                        formControlName="unitPrice" 
+                        formControlName="purchaseRate" 
                         class="form-control"
-                        [class.is-invalid]="isProductFieldInvalid(i, 'unitPrice')"
+                        [class.is-invalid]="isProductFieldInvalid(i, 'purchaseRate')"
                         placeholder="Price"
                         min="0.01"
                         step="0.01"
                       >
                     </div>
-                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'unitPrice')">
+                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'purchaseRate')">
                       Unit price must be greater than 0
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="form-field-container">
-                    <div class="input-group">
-                      <input 
-                        type="number" 
-                        formControlName="discountPercentage" 
-                        class="form-control"
-                        [class.is-invalid]="isProductFieldInvalid(i, 'discountPercentage')"
-                        placeholder="%"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                      >
-                      <span class="input-group-text">%</span>
-                    </div>
-                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'discountPercentage')">
-                      Discount must be between 0 and 100
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="form-field-container">
-                    <div class="input-group">
-                      <span class="input-group-text">₹</span>
-                      <input 
-                        type="number" 
-                        formControlName="discountAmount" 
-                        class="form-control"
-                        [class.is-invalid]="isProductFieldInvalid(i, 'discountAmount')"
-                        placeholder="Amount"
-                        min="0"
-                        step="0.01"
-                      >
-                    </div>
-                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'discountAmount')">
-                      Discount amount must be 0 or greater
                     </div>
                   </div>
                 </td>
@@ -199,6 +175,16 @@
                       class="form-control"
                       readonly
                       placeholder="Final"
+                    >
+                  </div>
+                </td>
+                <td>
+                  <div class="form-field-container">
+                    <input 
+                      type="text" 
+                      formControlName="remarks" 
+                      class="form-control"
+                      placeholder="Remarks"
                     >
                   </div>
                 </td>
