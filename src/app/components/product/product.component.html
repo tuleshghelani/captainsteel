@@ -50,6 +50,8 @@
             <th>Min Stock</th>
             <th>Status</th>
             <th>Remaining Quantity</th>
+            <th>Blocked Amount</th>
+            <th>Total Remaining Amount</th>
             <th>Purchase Amount</th>
             <th>Sale Amount</th>
             <th>Actions</th>
@@ -68,6 +70,8 @@
               </span>
             </td>
             <td>{{ product.remainingQuantity }}</td>
+            <td>{{ product.blockedQuantity }}</td>
+            <td>{{ product.totalRemainingQuantity }}</td>
             <td>{{ product.purchaseAmount }}</td>
             <td>{{ product.saleAmount }}</td>
             <td class="actions">

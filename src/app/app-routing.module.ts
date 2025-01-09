@@ -22,8 +22,8 @@ import { DailyProfitComponent } from './components/all-profits/daily-profit/dail
 import { CreateAttendanceComponent } from './components/attendance/create-attendance/create-attendance.component';
 import { AttendanceListComponent } from './components/attendance/attendance-list/attendance-list.component';
 import { AttendanceDetailComponent } from './components/attendance/attendance-detail/attendance-detail.component';
-import { QuotationComponent } from './components/quotation/quotation.component';
-import { AddQuotationComponent } from './components/add-quotation/add-quotation.component';
+import { QuotationComponent } from './components/all-quotation/quotation/quotation.component';
+import { AddQuotationComponent } from './components/all-quotation/add-quotation/add-quotation.component';
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },

@@ -1,17 +1,18 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { QuotationService } from '../../services/quotation.service';
-import { CustomerService } from '../../services/customer.service';
-import { SnackbarService } from '../../shared/services/snackbar.service';
+import { QuotationService } from '../../../services/quotation.service';
+import { CustomerService } from '../../../services/customer.service';
+import { SnackbarService } from '../../../shared/services/snackbar.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { ModalService } from '../../services/modal.service';
-import { DateUtils } from '../../shared/utils/date-utils';
+import { ModalService } from '../../../services/modal.service';
+import { DateUtils } from '../../../shared/utils/date-utils';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { SaleModalComponent } from '../sale-modal/sale-modal.component';
-import { LoaderComponent } from '../../shared/components/loader/loader.component';
-import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
-import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
+import { SaleModalComponent } from '../../sale-modal/sale-modal.component';
+import { LoaderComponent } from '../../../shared/components/loader/loader.component';
+import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { QuotationStatus } from '../../../models/quotation.model';
 
 @Component({
   selector: 'app-quotation',
@@ -31,9 +32,10 @@ import { PaginationComponent } from '../../shared/components/pagination/paginati
   styleUrl: './quotation.component.scss'
 })
 export class QuotationComponent {
-quotations: any[] = [];
-searchForm!: FormGroup;
-isLoading = false;
+  quotations: any[] = [];
+  searchForm!: FormGroup;
+  isLoading = false;
+  statusOptions: any[] = [];
 
 
 // Pagination properties
@@ -60,6 +62,7 @@ isLoading = false;
     private dateUtils: DateUtils,
   ){
     this.initializeForm();
+    this.statusOptions = Object.entries(QuotationStatus).map(([key, value]) => ({ label: value, value: key }));
   }
 
   ngOnInit(): void {
@@ -72,7 +75,8 @@ isLoading = false;
       search: [''],
       customerId: [''],
       startDate: [''],
-      endDate: ['']
+      endDate: [''],
+      status: null
     });
   }
 
@@ -176,5 +180,43 @@ isLoading = false;
     this.searchForm.reset();
     this.currentPage = 0;
     this.loadQuotations();
+  }
+
+  getStatusLabel(status: string): string {
+    return QuotationStatus[status as keyof typeof QuotationStatus] || status;
+  }
+
+  getStatusClass(status: string): string {
+    const statusClasses: { [key: string]: string } = {
+      Q: 'status-quote',
+      A: 'status-accepted',
+      D: 'status-declined',
+      R: 'status-ready',
+      P: 'status-processing',
+      C: 'status-completed'
+    };
+    return statusClasses[status] || 'status-default';
+  }
+
+  generatePdf(id: number, quotation: any): void {
+    if (!quotation) return;
+
+    quotation.isPrinting = true;
+    
+    this.quotationService.generatePdf(id).subscribe({
+      next: (response) => {
+        const url = window.URL.createObjectURL(response.blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'quotation-' + quotation.customerName + '.pdf';
+        link.click();
+        window.URL.revokeObjectURL(url);
+        quotation.isPrinting = false;
+      },
+      error: () => {
+        this.snackbar.error('Failed to generate PDF');
+        quotation.isPrinting = false;
+      }
+    });
   }
 }

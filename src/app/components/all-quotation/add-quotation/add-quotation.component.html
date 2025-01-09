@@ -1,0 +1,280 @@
+<div class="add-quotation-container">
+  <button class="btn btn-secondary back-btn" routerLink="/quotation">
+    <i class="fas fa-arrow-left"></i> Back to Quotations
+  </button>
+
+  <div class="form-card">
+    <div class="card-header">
+      <h2 class="form-title">
+        <i class="fas fa-file-invoice"></i> Create New Quotation
+      </h2>
+    </div>
+    
+    <form [formGroup]="quotationForm" (ngSubmit)="onSubmit()" class="quotation-form">
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="form-row">
+          <!-- Customer Selection -->
+          <div class="form-group">
+            <label>
+              <i class="fas fa-user"></i> Select Customer
+            </label>
+            <div class="select-group">
+              <app-searchable-select
+                formControlName="customerId"
+                [options]="customers"
+                labelKey="name"
+                valueKey="id"
+                [placeholder]="'Select Customer'"
+                [searchPlaceholder]="'Search customers...'"
+              ></app-searchable-select>
+              <button 
+                type="button" 
+                class="btn-icon refresh" 
+                (click)="refreshCustomers()" 
+                [disabled]="isLoadingCustomers"
+                title="Refresh Customers"
+              >
+                <i class="fas" [ngClass]="isLoadingCustomers ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Customer Name -->
+          <div class="form-group">
+            <label>
+              <i class="fas fa-user-tag"></i> Customer Name <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              formControlName="customerName" 
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('customerName')"
+              placeholder="Enter customer name"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('customerName')">
+              Customer name is required
+            </div>
+          </div>
+
+          <!-- Quote Date -->
+          <div class="form-group">
+            <label>
+              <i class="fas fa-calendar"></i> Quote Date
+            </label>
+            <input 
+              type="date" 
+              formControlName="quoteDate" 
+              class="form-control"
+              readonly
+            >
+          </div>
+
+          <!-- Valid Until -->
+          <div class="form-group">
+            <label>
+              <i class="fas fa-calendar-check"></i> Valid Until <span class="required">*</span>
+            </label>
+            <input 
+              type="date" 
+              formControlName="validUntil" 
+              class="form-control"
+              [class.is-invalid]="isFieldInvalid('validUntil')"
+              [min]="minValidUntilDate"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('validUntil')">
+              Valid until date is required and must be after quote date
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Section -->
+      <div class="products-section" formArrayName="items">
+        <div class="products-header">
+          <h3><i class="fas fa-boxes"></i> Products</h3>
+          <button type="button" class="btn btn-primary" (click)="addItem()">
+            <i class="fas fa-plus"></i> Add Product
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table products-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Discount %</th>
+                <th>Tax %</th>
+                <th>Final Price</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of itemsFormArray.controls; let i=index" [formGroupName]="i">
+                <!-- Product Selection -->
+                <td>
+                  <app-searchable-select
+                    formControlName="productId"
+                    [options]="products"
+                    labelKey="name"
+                    valueKey="id"
+                    [placeholder]="'Select Product'"
+                    [class.is-invalid]="isItemFieldInvalid(i, 'productId')"
+                  ></app-searchable-select>
+                </td>
+
+                <!-- Quantity -->
+                <td>
+                  <input 
+                    type="number" 
+                    formControlName="quantity" 
+                    class="form-control"
+                    [class.is-invalid]="isItemFieldInvalid(i, 'quantity')"
+                    min="1"
+                  >
+                </td>
+
+                <!-- Unit Price -->
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input 
+                      type="number" 
+                      formControlName="unitPrice" 
+                      class="form-control"
+                      [class.is-invalid]="isItemFieldInvalid(i, 'unitPrice')"
+                      min="0.01"
+                      step="0.01"
+                    >
+                  </div>
+                </td>
+
+                <!-- Discount % -->
+                <td>
+                  <div class="input-group">
+                    <input 
+                      type="number" 
+                      formControlName="discountPercentage" 
+                      class="form-control"
+                      [class.is-invalid]="isItemFieldInvalid(i, 'discountPercentage')"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                    >
+                    <span class="input-group-text">%</span>
+                  </div>
+                </td>
+
+                <!-- Tax % -->
+                <td>
+                  <div class="input-group">
+                    <input 
+                      type="number" 
+                      formControlName="taxPercentage" 
+                      class="form-control"
+                      [class.is-invalid]="isItemFieldInvalid(i, 'taxPercentage')"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                    >
+                    <span class="input-group-text">%</span>
+                  </div>
+                </td>
+
+                <!-- Final Price -->
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input 
+                      type="number" 
+                      formControlName="finalPrice" 
+                      class="form-control"
+                      readonly
+                    >
+                  </div>
+                </td>
+
+                <!-- Actions -->
+                <td>
+                  <button 
+                    type="button" 
+                    class="btn-icon remove-product" 
+                    (click)="removeItem(i)"
+                    [disabled]="itemsFormArray.length === 1"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Additional Details -->
+      <div class="additional-details">
+        <div class="form-row">
+          <div class="form-group">
+            <label>
+              <i class="fas fa-comment"></i> Remarks
+            </label>
+            <textarea 
+              formControlName="remarks" 
+              class="form-control" 
+              rows="3"
+              placeholder="Optional remarks"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <i class="fas fa-file-contract"></i> Terms & Conditions
+            </label>
+            <textarea 
+              formControlName="termsConditions" 
+              class="form-control" 
+              rows="3"
+              placeholder="Optional terms and conditions"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Section -->
+      <div class="quotation-summary">
+        <div class="summary-item">
+          <span>Total Products:</span>
+          <strong>{{ itemsFormArray.length }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Total Amount:</span>
+          <strong>₹{{ getTotalAmount() | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="btn btn-secondary"
+          (click)="resetForm()"
+          [disabled]="loading"
+        >
+          <i class="fas fa-undo"></i> Reset
+        </button>
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="quotationForm.invalid || loading"
+        >
+          <i class="fas" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+          {{ loading ? 'Saving...' : 'Save Quotation' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<app-loader *ngIf="loading"></app-loader>

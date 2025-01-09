@@ -305,3 +305,48 @@
       }
     }
   }
+  
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+    display: inline-block;
+    min-width: 100px;
+  
+    &.status-quote {
+      background-color: var(--info-light);
+      color: var(--info);
+    }
+  
+    &.status-accepted {
+      background-color: var(--success-light);
+      color: var(--success);
+    }
+  
+    &.status-declined {
+      background-color: var(--danger-light);
+      color: var(--danger);
+    }
+  
+    &.status-ready {
+      background-color: var(--warning-light);
+      color: var(--warning);
+    }
+  
+    &.status-processing {
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+  
+    &.status-completed {
+      background-color: var(--success-light);
+      color: var(--success);
+    }
+  
+    &.status-default {
+      background-color: var(--gray-light);
+      color: var(--gray);
+    }
+  }

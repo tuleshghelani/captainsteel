@@ -9,6 +9,8 @@ export interface Product {
   purchaseAmount?: number;
   saleAmount?: number;
   status: 'A' | 'I';
+  blockedQuantity?: number;
+  totalRemainingQuantity?: number;
   createdAt?: string;
   updatedAt?: string;
 }
