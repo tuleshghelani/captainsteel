@@ -135,16 +135,12 @@
                 <td>
                   <div class="form-field-container">
                     <input 
-                      type="number" 
+                      type="text" 
                       formControlName="coalNumber" 
                       class="form-control"
                       [class.is-invalid]="isProductFieldInvalid(i, 'coalNumber')"
-                      placeholder="Qty"
-                      min="1"
+                      placeholder="Coal Number"
                     >
-                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'quantity')">
-                      Coal number must be 1 or greater
-                    </div>
                   </div>
                 </td>
                 <td>

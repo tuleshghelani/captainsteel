@@ -1,28 +1,26 @@
 <div class="searchable-select" [class.active]="isOpen">
-  <div class="select-trigger" (click)="toggleDropdown()">
-    <span class="selected-text">{{ getSelectedLabel() }}</span>
+  <div class="select-input">
+    <input 
+      type="text" 
+      class="search-input" 
+      [placeholder]="placeholder"
+      [(ngModel)]="searchText"
+      (input)="onSearch($event)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      (keydown)="handleKeydown($event)"
+    >
     <i class="fas" [class.fa-chevron-down]="!isOpen" [class.fa-chevron-up]="isOpen"></i>
   </div>
   
   <div class="select-dropdown" *ngIf="isOpen">
-    <div class="search-container">
-      <input 
-        type="text" 
-        class="search-input" 
-        [placeholder]="searchPlaceholder" 
-        [value]="searchText"
-        (input)="onSearch($event)"
-        (click)="$event.stopPropagation()"
-      >
-      <i class="fas fa-search search-icon"></i>
-    </div>
-    
     <div class="options-container">
       <div 
         class="option" 
-        *ngFor="let option of filteredOptions"
-        (click)="selectOption(option)"
+        *ngFor="let option of filteredOptions; let i = index"
+        (mousedown)="selectOption(option)"
         [class.selected]="isSelected(option)"
+        [class.highlighted]="i === highlightedIndex"
       >
         <div class="option-content">
           <div class="checkbox" *ngIf="multiple">

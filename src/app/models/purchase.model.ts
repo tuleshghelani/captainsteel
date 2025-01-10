@@ -11,6 +11,8 @@ export interface Purchase {
   otherExpenses?: number;
   remainingQuantity?: number;
   // totalAmount?: number;
+  remarks?: string;
+  coalNumber?: string;
 
   id?: number;
   customerId: number;

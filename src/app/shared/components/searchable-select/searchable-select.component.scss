@@ -2,43 +2,35 @@
   position: relative;
   width: 100%;
   
-  .select-trigger {
+  .select-input {
+    position: relative;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px;
-    background: white;
-    border: 1px solid var(--supporting);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    // height: 42px;
     
-    &:hover {
-      border-color: var(--primary);
-    }
-    
-    .selected-text {
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .search-input {
+      width: 100%;
+      padding: 8px 32px 8px 12px;
+      border: 1px solid var(--supporting);
+      border-radius: 4px;
       font-size: 0.9rem;
+      transition: all 0.3s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(253, 120, 35, 0.1);
+      }
     }
     
     i {
+      position: absolute;
+      right: 12px;
       color: var(--text-secondary);
       font-size: 0.8rem;
-      transition: transform 0.3s ease;
-      margin-left: 8px;
+      pointer-events: none;
     }
   }
-  
-  &.active .select-trigger {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(253, 120, 35, 0.1);
-  }
-  
+
   .select-dropdown {
     position: absolute;
     top: calc(100% + 4px);
@@ -48,42 +40,11 @@
     border-radius: 4px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 1000;
-    max-height: 300px;
     border: 1px solid var(--supporting);
-    width: fit-content;
-    
-    .search-container {
-      padding: 8px;
-      border-bottom: 1px solid var(--supporting);
-      position: relative;
-      
-      .search-input {
-        // width: 100%;
-        padding: 8px 32px 8px 12px;
-        border: 1px solid var(--supporting);
-        border-radius: 4px;
-        font-size: 0.9rem;
-        
-        &:focus {
-          outline: none;
-          border-color: var(--primary);
-          box-shadow: 0 0 0 2px rgba(253, 120, 35, 0.1);
-        }
-      }
-      
-      .search-icon {
-        position: absolute;
-        right: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-      }
-    }
     
     .options-container {
-      overflow-y: auto;
       max-height: 200px;
+      overflow-y: auto;
       padding: 4px 0;
       
       &::-webkit-scrollbar {
@@ -131,7 +92,7 @@
         }
         
         &.selected {
-          background-color: rgba(var(--primary-rgb), 0.1);
+          background-color: var(--primary);
           color: var(--primary);
 
           .checkbox {
@@ -142,6 +103,10 @@
               color: white;
             }
           }
+        }
+        
+        &.highlighted {
+          background-color: var(--background);
         }
       }
       

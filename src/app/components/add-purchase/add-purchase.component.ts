@@ -15,7 +15,7 @@ import { SearchableSelectComponent } from '../../shared/components/searchable-se
 interface ProductForm {
   productId: string;
   quantity: number;
-  coalNumber: number;
+  coalNumber: string;
   purchaseRate: number;
   finalPrice: number;
   remarks: string
@@ -83,10 +83,10 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
     return this.fb.group({
       productId: ['', Validators.required],
       quantity: ['', [Validators.required, Validators.min(1)]],
-      coalNumber: ['', [Validators.required, Validators.min(1)]],
+      coalNumber: [null, []],
       purchaseRate: ['', [Validators.required, Validators.min(0.01)]],
       finalPrice: [{ value: 0, disabled: true }],
-      remarks:['', Validators.required]
+      remarks:[null, []]
     });
   }
 

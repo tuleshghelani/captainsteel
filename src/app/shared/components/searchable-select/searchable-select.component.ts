@@ -33,6 +33,7 @@ export class SearchableSelectComponent implements ControlValueAccessor {
   selectedValue: any = '';
   selectedValues: any[] = [];
   filteredOptions: any[] = [];
+  highlightedIndex: number = -1;
   
   onChange: any = () => {};
   onTouch: any = () => {};
@@ -46,6 +47,12 @@ export class SearchableSelectComponent implements ControlValueAccessor {
       this.selectedValues = value || [];
     } else {
       this.selectedValue = value;
+      if (value) {
+        const selectedOption = this.options.find(opt => opt[this.valueKey] === value);
+        if (selectedOption) {
+          this.searchText = selectedOption[this.labelKey];
+        }
+      }
     }
   }
 
@@ -65,15 +72,35 @@ export class SearchableSelectComponent implements ControlValueAccessor {
     }
   }
 
+  onFocus() {
+    this.isOpen = true;
+    this.filterOptions();
+    this.highlightedIndex = -1;
+  }
+
+  onBlur() {
+    setTimeout(() => {
+      this.isOpen = false;
+      this.highlightedIndex = -1;
+      
+      if (!this.multiple) {
+        const selected = this.options.find(opt => opt[this.valueKey] === this.selectedValue);
+        this.searchText = selected ? selected[this.labelKey] : '';
+      }
+    }, 200);
+  }
+
   onSearch(event: Event) {
     this.searchText = (event.target as HTMLInputElement).value;
     this.filterOptions();
+    this.isOpen = true;
   }
 
   filterOptions() {
     this.filteredOptions = this.options.filter(option =>
       option[this.labelKey].toLowerCase().includes(this.searchText.toLowerCase())
     );
+    this.highlightedIndex = this.filteredOptions.length > 0 ? 0 : -1;
   }
 
   selectOption(option: any) {
@@ -90,6 +117,7 @@ export class SearchableSelectComponent implements ControlValueAccessor {
       this.onChange(this.selectedValues);
     } else {
       this.selectedValue = option[this.valueKey];
+      this.searchText = option[this.labelKey];
       this.onChange(this.selectedValue);
       this.isOpen = false;
     }
@@ -115,5 +143,76 @@ export class SearchableSelectComponent implements ControlValueAccessor {
     }
     const selected = this.options.find(opt => opt[this.valueKey] === this.selectedValue);
     return selected ? selected[this.labelKey] : this.placeholder;
+  }
+
+  handleKeydown(event: KeyboardEvent): void {
+    if (!this.isOpen) {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        this.isOpen = true;
+        this.highlightedIndex = 0;
+        event.preventDefault();
+      }
+      return;
+    }
+
+    switch (event.key) {
+      case 'ArrowDown':
+        this.highlightedIndex = Math.min(
+          this.highlightedIndex + 1, 
+          this.filteredOptions.length - 1
+        );
+        event.preventDefault();
+        this.scrollToHighlighted();
+        break;
+
+      case 'ArrowUp':
+        this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
+        event.preventDefault();
+        this.scrollToHighlighted();
+        break;
+
+      case 'Enter':
+        if (this.highlightedIndex >= 0 && this.filteredOptions[this.highlightedIndex]) {
+          this.selectOption(this.filteredOptions[this.highlightedIndex]);
+          (event.target as HTMLElement).blur();
+          event.preventDefault();
+        }
+        break;
+
+      case 'Escape':
+        this.isOpen = false;
+        this.highlightedIndex = -1;
+        event.preventDefault();
+        break;
+    }
+  }
+
+  private scrollToHighlighted(): void {
+    setTimeout(() => {
+      const container = document.querySelector('.options-container');
+      const highlighted = document.querySelector('.option.highlighted');
+      
+      if (container && highlighted) {
+        const containerRect = container.getBoundingClientRect();
+        const highlightedRect = highlighted.getBoundingClientRect();
+
+        if (highlightedRect.bottom > containerRect.bottom) {
+          container.scrollTop += highlightedRect.bottom - containerRect.bottom;
+        } else if (highlightedRect.top < containerRect.top) {
+          container.scrollTop -= containerRect.top - highlightedRect.top;
+        }
+      }
+    });
+  }
+
+  ngOnChanges(changes: any): void {
+    if (changes.options && !changes.options.firstChange) {
+      if (!this.multiple && this.selectedValue) {
+        const selectedOption = this.options.find(opt => opt[this.valueKey] === this.selectedValue);
+        if (selectedOption) {
+          this.searchText = selectedOption[this.labelKey];
+        }
+      }
+    }
   }
 } 
