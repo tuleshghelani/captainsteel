@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { formatDate } from '@angular/common';
@@ -83,7 +83,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
     return this.fb.group({
       productId: ['', Validators.required],
       quantity: ['', [Validators.required, Validators.min(1)]],
-      coalNumber: [null, []],
+      coalNumber: ['', [this.noDoubleQuotesValidator()]],
       unitPrice: ['', [Validators.required, Validators.min(0.01)]],
       finalPrice: [{ value: 0, disabled: true }],
       remarks:[null, []]
@@ -305,5 +305,11 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
     this.purchaseForm.patchValue({ totalAmount: total }, { emitEvent: false });
   }
 
-  
+  private noDoubleQuotesValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+      return control.value.includes('"') ? { doubleQuotes: true } : null;
+    };
+  }
+
 }

@@ -141,6 +141,9 @@
                       [class.is-invalid]="isProductFieldInvalid(i, 'coalNumber')"
                       placeholder="Coal Number"
                     >
+                    <div class="invalid-feedback" *ngIf="productsFormArray.at(i).get('coalNumber')?.errors?.['doubleQuotes']">
+                      Double quotes are not allowed
+                    </div>
                   </div>
                 </td>
                 <td>

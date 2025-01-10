@@ -76,7 +76,8 @@ export class PurchaseComponent implements OnInit {
       search: [''],
       customerId: [''],
       startDate: [''],
-      endDate: ['']
+      endDate: [''],
+      coalNumber: ['']
     });
   }
 
