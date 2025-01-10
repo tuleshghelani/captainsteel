@@ -16,7 +16,7 @@ interface ProductForm {
   productId: string;
   quantity: number;
   coalNumber: string;
-  purchaseRate: number;
+  unitPrice: number;
   finalPrice: number;
   remarks: string
 }
@@ -84,7 +84,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
       productId: ['', Validators.required],
       quantity: ['', [Validators.required, Validators.min(1)]],
       coalNumber: [null, []],
-      purchaseRate: ['', [Validators.required, Validators.min(0.01)]],
+      unitPrice: ['', [Validators.required, Validators.min(0.01)]],
       finalPrice: [{ value: 0, disabled: true }],
       remarks:[null, []]
     });
@@ -104,7 +104,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
   }
 
   private setupProductCalculations(group: FormGroup, index: number) {
-    const fields = ['quantity', 'purchaseRate'];
+    const fields = ['quantity', 'unitPrice'];
     
     fields.forEach(field => {
       group.get(field)?.valueChanges
@@ -119,11 +119,11 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
     const group = this.productsFormArray.at(index) as FormGroup;
     const values = {
       quantity: group.get('quantity')?.value || 0,
-      purchaseRate: group.get('purchaseRate')?.value || 0,
+      unitPrice: group.get('unitPrice')?.value || 0,
       finalPrice: 0
     };
 
-    const totalPrice = values.quantity * values.purchaseRate;
+    const totalPrice = values.quantity * values.unitPrice;
     
     // Determine which field was last changed
     const lastChangedField = document.activeElement?.getAttribute('formcontrolname');
@@ -234,7 +234,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
       if (errors) {
         if (errors['required']) return true;
         if (errors['min'] && fieldName === 'quantity') return true;
-        if (errors['min'] && fieldName === 'purchaseRate') return true;
+        if (errors['min'] && fieldName === 'unitPrice') return true;
         if (errors['min'] || errors['max']) return true;
         if (errors['min']) return true;
       }

@@ -93,7 +93,7 @@
                 <th>Product Name</th>
                 <th>Quantity</th>
                 <th>Coal Number</th>
-                <th>Unit Price</th>
+                <th>Purchase Rate</th>
                 <th>Final Price</th>
                 <th>Remarks</th>
                 <th>Actions</th>
@@ -149,15 +149,15 @@
                       <span class="input-group-text">₹</span>
                       <input 
                         type="number" 
-                        formControlName="purchaseRate" 
+                        formControlName="unitPrice" 
                         class="form-control"
-                        [class.is-invalid]="isProductFieldInvalid(i, 'purchaseRate')"
+                        [class.is-invalid]="isProductFieldInvalid(i, 'unitPrice')"
                         placeholder="Price"
                         min="0.01"
                         step="0.01"
                       >
                     </div>
-                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'purchaseRate')">
+                    <div class="invalid-feedback" *ngIf="isProductFieldInvalid(i, 'unitPrice')">
                       Unit price must be greater than 0
                     </div>
                   </div>
