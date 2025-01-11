@@ -51,8 +51,11 @@ export class EmployeeFormComponent implements OnInit {
       designation: [null, []],
       department: [null, []],
       status: ['A'],
-      regularHrsPrice: [null, []],
-      otHrsPrice: [null, []],
+      regularPay: [null, [Validators.required]],
+      overtimePay: [null, [Validators.required]],
+      wageType: ['HOURLY', [Validators.required]],
+      regularHours: [8, [Validators.required, Validators.min(0)]],
+      startTime: ['07:00', [Validators.required, Validators.pattern('^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$')]]
     });
   }
 
@@ -109,8 +112,11 @@ export class EmployeeFormComponent implements OnInit {
             designation: response.data.designation,
             department: response.data.department,
             status: response.data.status,
-            regularHrsPrice: response.data.regularHrsPrice,
-            otHrsPrice: response.data.otHrsPrice
+            regularPay: response.data.regularPay,
+            overtimePay: response.data.overtimePay,
+            wageType: response.data.wageType || 'HOURLY',
+            regularHours: response.data.regularHours || 8,
+            startTime: response.data.startTime || '07:00'
           });
         }
         this.isLoading = false;
@@ -132,7 +138,11 @@ export class EmployeeFormComponent implements OnInit {
     if (control?.errors && control.touched) {
       if (control.errors['required']) return `${fieldName} is required`;
       if (control.errors['email']) return 'Invalid email format';
-      if (control.errors['pattern']) return 'Invalid mobile number format';
+      if (control.errors['pattern']) {
+        if (fieldName === 'startTime') return 'Invalid time format (HH:mm)';
+        return 'Invalid format';
+      }
+      if (control.errors['min']) return `${fieldName} must be greater than 0`;
     }
     return '';
   }

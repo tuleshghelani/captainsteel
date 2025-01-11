@@ -116,34 +116,86 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="regularHrsPrice">
+          <label for="regularPay">
             <i class="fa-solid fa-coins"></i> Regular Hours Price 
           </label>
           <input 
             type="number" 
-            id="regularHrsPrice"
-            formControlName="regularHrsPrice"
+            id="regularPay"
+            formControlName="regularPay"
             class="form-control"
-            [class.is-invalid]="isFieldInvalid('regularHrsPrice')"
+            [class.is-invalid]="isFieldInvalid('regularPay')"
           >
-          <div class="invalid-feedback" *ngIf="isFieldInvalid('regularHrsPrice')">
-            {{ getFieldError('regularHrsPrice') }}
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('regularPay')">
+            {{ getFieldError('regularPay') }}
           </div>
         </div>
 
         <div class="form-group">
-          <label for="otHrsPrice">
-            <i class="fa-solid fa-coins"></i> OT Hours Price 
+          <label for="overtimePay">
+            <i class="fa-solid fa-coins"></i> Overtime Hours Price 
           </label>
           <input 
             type="number" 
-            id="otHrsPrice"
-            formControlName="otHrsPrice"
+            id="overtimePay"
+            formControlName="overtimePay"
             class="form-control"
-            [class.is-invalid]="isFieldInvalid('otHrsPrice')"
+            [class.is-invalid]="isFieldInvalid('overtimePay')"
           >
-          <div class="invalid-feedback" *ngIf="isFieldInvalid('otHrsPrice')">
-            {{ getFieldError('otHrsPrice') }}
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('overtimePay')">
+            {{ getFieldError('overtimePay') }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="wageType">
+            <i class="fas fa-money-bill"></i> Wage Type <span class="required">*</span>
+          </label>
+          <select 
+            id="wageType"
+            formControlName="wageType"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('wageType')"
+          >
+            <option value="HOURLY">Hourly</option>
+          </select>
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('wageType')">
+            {{ getFieldError('wageType') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regularHours">
+            <i class="fas fa-clock"></i> Regular Hours <span class="required">*</span>
+          </label>
+          <input 
+            type="number" 
+            id="regularHours"
+            formControlName="regularHours"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('regularHours')"
+            min="0"
+          >
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('regularHours')">
+            {{ getFieldError('regularHours') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="startTime">
+            <i class="fas fa-hourglass-start"></i> Start Time <span class="required">*</span>
+          </label>
+          <input 
+            type="time" 
+            id="startTime"
+            formControlName="startTime"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('startTime')"
+          >
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('startTime')">
+            {{ getFieldError('startTime') }}
           </div>
         </div>
       </div>
