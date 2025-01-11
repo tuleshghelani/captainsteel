@@ -109,6 +109,35 @@
   }
 }
 
+.delete-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background-color: #dc3545;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(10px);
+  cursor: pointer;
+
+  &.show {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  &:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+  }
+
+  i {
+    font-size: 14px;
+  }
+}
 .header-actions {
   display: flex;
   justify-content: space-between;
@@ -116,35 +145,6 @@
   margin-bottom: 1rem;
   padding: 0.5rem 0;
 
-  .delete-btn {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    background-color: #dc3545;
-    color: #ffffff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    opacity: 0;
-    transform: translateY(10px);
-    cursor: pointer;
-
-    &.show {
-      display: flex;
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    &:hover {
-      background-color: #c82333;
-      transform: translateY(-1px);
-    }
-
-    i {
-      font-size: 14px;
-    }
-  }
 
   .header-left {
     display: flex;

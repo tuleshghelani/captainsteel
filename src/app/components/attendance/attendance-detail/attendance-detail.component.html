@@ -15,7 +15,7 @@
       <div class="detail-row">
         <div class="detail-item">
           <label>Name:</label>
-          <span>{{employee.name}}</span>
+          <span>{{employee?.name}}</span>
         </div>
         <div class="detail-item">
           <label>Email:</label>
@@ -81,13 +81,6 @@
           </div>
         </div>
       </div>
-      <button 
-        [ngClass]="{'show': selectedAttendances.length > 0}"
-        class="btn btn-danger delete-btn"
-        (click)="deleteSelected()"
-      >
-        <i class="fas fa-trash"></i> Delete Selected ({{selectedAttendances.length}})
-      </button>
     </div>
 
     <div class="calendar-wrapper">
@@ -97,6 +90,13 @@
       ></app-calendar-view>
     </div>
 
+    <button 
+      [ngClass]="{'show': selectedAttendances.length > 0}"
+      class="btn btn-danger delete-btn"
+      (click)="deleteSelected()"
+    >
+      <i class="fas fa-trash"></i> Delete Selected ({{selectedAttendances.length}})
+    </button>
     <div class="table-wrapper">
       <div class="table-responsive">
         <table class="table">
@@ -112,7 +112,11 @@
               <th>Date</th>
               <th>Start Time</th>
               <th>End Time</th>
-              <th>Created By</th>
+              <th>Regular Hours</th>
+              <th>Regular Pay</th>
+              <th>Overtime Hours</th>
+              <th>Overtime Pay</th>
+              <th>Total Pay</th>
               <th>Remarks</th>
             </tr>
           </thead>
@@ -128,7 +132,11 @@
               <td>{{record.startDateTime | date:'dd-MM-yyyy'}}</td>
               <td>{{record.startDateTime | date:'HH:mm'}}</td>
               <td>{{record.endDateTime | date:'HH:mm'}}</td>
-              <td>{{record.createdBy.name}}</td>
+              <td>{{record.regularHours}}</td>
+              <td>{{record.regularPay}}</td>
+              <td>{{record.overtimeHours}}</td>
+              <td>{{record.overtimePay}}</td>
+              <td>{{record.totalPay}}</td>
               <td>{{record.remarks}}</td>
             </tr>
             <tr *ngIf="!attendanceRecords?.length">

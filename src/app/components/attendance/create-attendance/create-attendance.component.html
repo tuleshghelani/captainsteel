@@ -75,7 +75,17 @@
             type="datetime-local" 
             formControlName="endDateTime"
             class="form-control"
+            [class.is-invalid]="isFieldInvalid('endDateTime')"
+            [max]="getMaxEndDateTime()"
           >
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('endDateTime')">
+            <span *ngIf="attendanceForm.get('endDateTime')?.errors?.['sameDayRequired']">
+              End date must be the same as start date
+            </span>
+            <span *ngIf="attendanceForm.get('endDateTime')?.errors?.['endTimeBeforeStart']">
+              End time cannot be before start time
+            </span>
+          </div>
         </div>
       </div>
 

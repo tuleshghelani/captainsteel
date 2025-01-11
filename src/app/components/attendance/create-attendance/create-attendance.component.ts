@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AttendanceService } from '../../../services/attendance.service';
 import { EmployeeService } from '../../../services/employee.service';
@@ -52,13 +52,19 @@ export class CreateAttendanceComponent implements OnInit {
     const endDateTime = this.setDefaultTime(today, 23, 0);   // 11:00 PM IST
   
     this.attendanceForm = this.fb.group({
-      employeeIds: [[], Validators.required],
+      employeeIds: ['', Validators.required],
       startDateTime: [startDateTime, Validators.required],
-      endDateTime: [endDateTime, Validators.required],
+      endDateTime: [endDateTime, [Validators.required, this.validateEndDateTime.bind(this)]],
       remarks: ['']
+    });
+
+    // Subscribe to start date changes to update end date validation
+    this.attendanceForm.get('startDateTime')?.valueChanges.subscribe(() => {
+      this.attendanceForm.get('endDateTime')?.updateValueAndValidity();
     });
   }
 
+  
   private setDefaultTime(date: Date, hours: number, minutes: number): string {
     // Create date in local timezone
     const newDate = new Date(date);
@@ -77,6 +83,28 @@ export class CreateAttendanceComponent implements OnInit {
     const minute = String(newDate.getMinutes()).padStart(2, '0');
     
     return `${year}-${month}-${day}T${hour}:${minute}`;
+  }
+
+  private validateEndDateTime(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+    
+    const startDateTime = this.attendanceForm?.get('startDateTime')?.value;
+    if (!startDateTime) return null;
+
+    const startDate = new Date(startDateTime);
+    const endDate = new Date(control.value);
+
+    // Check if dates are different
+    if (startDate.toDateString() !== endDate.toDateString()) {
+      return { sameDayRequired: true };
+    }
+
+    // Check if end time is before start time
+    if (endDate < startDate) {
+      return { endTimeBeforeStart: true };
+    }
+
+    return null;
   }
 
   loadEmployees(): void {
@@ -122,6 +150,8 @@ export class CreateAttendanceComponent implements OnInit {
             // this.router.navigate(['/attendance']);
           }
           this.isLoading = false;
+          this.attendanceForm.reset();
+          this.initializeForm();
         },
         error: (error) => {
           this.snackbar.error(error?.error?.message || 'Failed to create attendance');
@@ -146,5 +176,21 @@ export class CreateAttendanceComponent implements OnInit {
         this.isLoadingEmployees = false;
       }
     });
+  }
+
+  getMaxEndDateTime(): string {
+    const startDateTime = this.attendanceForm.get('startDateTime')?.value;
+    if (!startDateTime) return '';
+
+    const startDate = new Date(startDateTime);
+    const maxDate = new Date(startDate);
+    maxDate.setHours(23, 59, 59);
+    
+    return this.dateUtils.formatDateTimeForInput(maxDate);
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.attendanceForm.get(fieldName);
+    return field ? (field.invalid && (field.dirty || field.touched)) : false;
   }
 }

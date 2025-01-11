@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, forwardRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, forwardRef, ElementRef, HostListener } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
@@ -38,6 +38,8 @@ export class SearchableSelectComponent implements ControlValueAccessor {
   onChange: any = () => {};
   onTouch: any = () => {};
 
+  constructor(private elementRef: ElementRef) {}
+
   ngOnInit() {
     this.filteredOptions = this.options;
   }
@@ -64,7 +66,8 @@ export class SearchableSelectComponent implements ControlValueAccessor {
     this.onTouch = fn;
   }
 
-  toggleDropdown() {
+  toggleDropdown(event?: Event) {
+    event?.stopPropagation();
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       this.searchText = '';
@@ -80,10 +83,9 @@ export class SearchableSelectComponent implements ControlValueAccessor {
 
   onBlur() {
     setTimeout(() => {
-      this.isOpen = false;
-      this.highlightedIndex = -1;
-      
       if (!this.multiple) {
+        this.isOpen = false;
+        this.highlightedIndex = -1;
         const selected = this.options.find(opt => opt[this.valueKey] === this.selectedValue);
         this.searchText = selected ? selected[this.labelKey] : '';
       }
@@ -91,7 +93,15 @@ export class SearchableSelectComponent implements ControlValueAccessor {
   }
 
   onSearch(event: Event) {
-    this.searchText = (event.target as HTMLInputElement).value;
+    const value = (event.target as HTMLInputElement).value;
+    
+    // If multiple selection and has selected values, don't update search text
+    if (this.multiple && this.selectedValues.length > 0 && !this.isOpen) {
+      this.searchText = this.getDisplayText();
+      return;
+    }
+    
+    this.searchText = value;
     this.filterOptions();
     this.isOpen = true;
   }
@@ -103,7 +113,8 @@ export class SearchableSelectComponent implements ControlValueAccessor {
     this.highlightedIndex = this.filteredOptions.length > 0 ? 0 : -1;
   }
 
-  selectOption(option: any) {
+  selectOption(option: any, event?: Event) {
+    event?.stopPropagation();
     if (this.multiple) {
       const value = option[this.valueKey];
       const index = this.selectedValues.indexOf(value);
@@ -214,5 +225,40 @@ export class SearchableSelectComponent implements ControlValueAccessor {
         }
       }
     }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: Event) {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.isOpen = false;
+      if (!this.multiple) {
+        const selected = this.options.find(opt => opt[this.valueKey] === this.selectedValue);
+        this.searchText = selected ? selected[this.labelKey] : '';
+      }
+    }
+  }
+
+  getDisplayText(): string {
+    if (this.multiple) {
+      const selectedCount = this.selectedValues.length;
+      if (selectedCount === 0) return this.placeholder;
+      
+      const selectedOptions = this.options.filter(opt => 
+        this.selectedValues.includes(opt[this.valueKey])
+      );
+      
+      if (selectedCount === 1) {
+        return selectedOptions[0][this.labelKey];
+      }
+      
+      return `${selectedCount} employees selected`;
+    }
+    
+    if (!this.selectedValue && this.defaultOption) {
+      return this.defaultOption.label;
+    }
+    
+    const selected = this.options.find(opt => opt[this.valueKey] === this.selectedValue);
+    return selected ? selected[this.labelKey] : this.placeholder;
   }
 } 
