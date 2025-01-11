@@ -50,6 +50,11 @@ export class AttendanceDetailComponent implements OnInit {
   startDate = new FormControl('');
   endDate = new FormControl('');
   attendanceDates: string[] = [];
+  totalRegularHours!:number
+  totalRegularPay!:number
+  totalOvertimeHours!:number
+  totalOvertimePay!:number
+  totalOfTotalPay!:number
 
   constructor(
     private employeeService: EmployeeService,
@@ -134,6 +139,7 @@ export class AttendanceDetailComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.attendanceRecords = response.data.content;
+          this.calculateTotalPayAndHours();
           this.attendanceDates = this.attendanceRecords.map(record => 
             this.formatDateForApi(record.startDateTime)
           );
@@ -148,6 +154,26 @@ export class AttendanceDetailComponent implements OnInit {
       }
     });
   }
+
+calculateTotal(fieldName:any[]){
+  return fieldName.reduce((acuumulartor, field) =>{
+    return acuumulartor + field;
+  },0)
+}
+
+calculateTotalPayAndHours(){
+  const regularHoursList = this.attendanceRecords.map(record => record.regularHours);
+  const regularPayList = this.attendanceRecords.map(record => record.regularPay);
+  const overtimeHoursList = this.attendanceRecords.map(record => record.overtimeHours);
+  const overtimePayList = this.attendanceRecords.map(record => record.overtimePay);
+  const totalPayList = this.attendanceRecords.map(record => record.totalPay);              
+
+  this.totalRegularHours = this.calculateTotal(regularHoursList)
+  this.totalRegularPay = this.calculateTotal(regularPayList)
+  this.totalOvertimeHours = this.calculateTotal(overtimeHoursList)
+  this.totalOvertimePay = this.calculateTotal(overtimePayList)
+  this.totalOfTotalPay = this.calculateTotal(totalPayList)
+}
 
   onPageChange(page: number): void {
     this.currentPage = page;
