@@ -42,6 +42,22 @@
             {{ getFieldError('mobileNumber') }}
           </div>
         </div>
+
+        <div class="form-group">
+          <label for="aadharNumber">
+            <i class="fas fa-id-card"></i> Aadhar Number 
+          </label>
+          <input 
+            type="text" 
+            id="aadharNumber"
+            formControlName="aadharNumber"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('aadharNumber')"
+          >
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('aadharNumber')">
+            {{ getFieldError('aadharNumber') }}
+          </div>
+        </div>
       </div>
 
       <div class="form-row">

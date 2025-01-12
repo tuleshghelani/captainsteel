@@ -240,4 +240,82 @@ calculateTotalPayAndHours(){
   getCurrentMonth(): Date {
     return this.startDate.value ? new Date(this.startDate.value) : new Date();
   }
+
+  downloadAttendance(): void {
+    if (!this.startDate.value) {
+      this.snackbar.error('Please select start date');
+      return;
+    }
+
+    this.isLoading = true;
+    const params = {
+      employeeId: this.employee.id,
+      startDate: this.formatDateForApi(this.startDate.value)
+    };
+
+    this.attendanceService.generatePdf(params).subscribe({
+      next: (response) => {
+        const url = window.URL.createObjectURL(response.blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = response.filename;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.snackbar.error('Failed to download attendance report');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  printAttendance(): void {
+    if (!this.startDate.value) {
+      this.snackbar.error('Please select start date');
+      return;
+    }
+
+    this.isLoading = true;
+    const params = {
+      employeeId: this.employee.id,
+      startDate: this.formatDateForApi(this.startDate.value)
+    };
+
+    this.attendanceService.generatePdf(params).subscribe({
+      next: (response) => {
+        const blob = response.blob;
+        const url = window.URL.createObjectURL(blob);
+        
+        // Create an iframe for printing
+        const printFrame = document.createElement('iframe');
+        printFrame.style.display = 'none';
+        printFrame.src = url;
+        
+        document.body.appendChild(printFrame);
+        printFrame.onload = () => {
+          setTimeout(() => {
+            try {
+              printFrame.contentWindow?.print();
+              // Only set loading to false after print dialog is shown
+              this.isLoading = false;
+            } catch (error) {
+              this.snackbar.error('Failed to open print dialog');
+              this.isLoading = false;
+            }
+          }, 1000);
+
+          // Cleanup after longer delay
+          // setTimeout(() => {
+          //   document.body.removeChild(printFrame);
+          //   window.URL.revokeObjectURL(url);
+          // }, 5000);
+        };
+      },
+      error: (error) => {
+        this.snackbar.error('Failed to generate attendance report');
+        this.isLoading = false;
+      }
+    });
+  }
 }

@@ -46,6 +46,7 @@ export class EmployeeFormComponent implements OnInit {
     this.employeeForm = this.fb.group({
       name: [null, [Validators.required]],
       mobileNumber: [null, []],
+      aadharNumber: [null, [Validators.pattern('^[0-9]{12}$')]],
       email: [null, [Validators.email]],
       address: [null, []],
       designation: [null, []],
@@ -107,6 +108,7 @@ export class EmployeeFormComponent implements OnInit {
           this.employeeForm.patchValue({
             name: response.data.name,
             mobileNumber: response.data.mobileNumber,
+            aadharNumber: response.data.aadharNumber,
             email: response.data.email,
             address: response.data.address,
             designation: response.data.designation,

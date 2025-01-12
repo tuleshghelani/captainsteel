@@ -78,6 +78,25 @@
                 class="form-control"
               >
             </div>
+            <div class="button-group">
+              <button 
+                class="btn btn-primary" 
+                (click)="downloadAttendance()"
+                [disabled]="isLoading || !startDate.value"
+              >
+                <i class="fas" [ngClass]="isLoading ? 'fa-spinner fa-spin' : 'fa-download'"></i>
+                {{ isLoading ? 'Downloading...' : 'Download' }}
+              </button>
+              
+              <button 
+                class="btn btn-secondary" 
+                (click)="printAttendance()"
+                [disabled]="isLoading || !startDate.value"
+              >
+                <i class="fas" [ngClass]="isLoading ? 'fa-spinner fa-spin' : 'fa-print'"></i>
+                {{ isLoading ? 'Processing...' : 'Print' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
