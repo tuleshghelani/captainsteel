@@ -12,7 +12,7 @@ export interface Purchase {
   remainingQuantity?: number;
   // totalAmount?: number;
   remarks?: string;
-  coalNumber?: string;
+  coilNumber?: string;
 
   id?: number;
   customerId: number;

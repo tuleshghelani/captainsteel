@@ -92,7 +92,7 @@
               <tr>
                 <th>Product Name</th>
                 <th>Quantity</th>
-                <th>Coal Number</th>
+                <th>Coil Number</th>
                 <th>Purchase Rate</th>
                 <th>Final Price</th>
                 <th>Remarks</th>
@@ -136,12 +136,12 @@
                   <div class="form-field-container">
                     <input 
                       type="text" 
-                      formControlName="coalNumber" 
+                      formControlName="coilNumber" 
                       class="form-control"
-                      [class.is-invalid]="isProductFieldInvalid(i, 'coalNumber')"
-                      placeholder="Coal Number"
+                      [class.is-invalid]="isProductFieldInvalid(i, 'coilNumber')"
+                      placeholder="coil Number"
                     >
-                    <div class="invalid-feedback" *ngIf="productsFormArray.at(i).get('coalNumber')?.errors?.['doubleQuotes']">
+                    <div class="invalid-feedback" *ngIf="productsFormArray.at(i).get('coilNumber')?.errors?.['doubleQuotes']">
                       Double quotes are not allowed
                     </div>
                   </div>
