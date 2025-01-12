@@ -11,6 +11,79 @@
       </h2>
     </div>
     
+    <!-- create quotation section -->
+    <div class="create-quotation-section">
+      <div class="create-quotation-header">
+        <h3><i class="fa-solid fa-receipt"></i> Create Quotation </h3>
+      </div>
+      <form [formGroup]="createQuotationForm" (keydown.enter)="$event.preventDefault()">
+        <div class="quotation-row">
+          <!-- Customer Name -->
+          <div class="form-group">
+            <label>
+              <i class="fas fa-user"></i> Customer Name <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              formControlName="customerName" 
+              class="form-control"
+              [class.is-invalid]="isFieldCreateQtInvalid('customerName')"
+              placeholder="Enter customer name"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldCreateQtInvalid('customerName')">
+              Customer name is required
+            </div>
+          </div>
+
+          <!--Contact number -->
+          <div class="form-group col-4">
+            <label>
+              <i class="fa-solid fa-phone"></i> Contact Number <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              formControlName="contactNumber" 
+              class="form-control"
+              [class.is-invalid]="isFieldCreateQtInvalid('contactNumber')"
+              placeholder="Enter contact number"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldCreateQtInvalid('contactNumber')">
+              Contact Number is required
+            </div>
+          </div>
+
+          <!-- customer address -->
+          <div class="form-group">
+            <label>
+              <i class="fa-solid fa-location-dot"></i> Address
+            </label>
+            <textarea 
+              formControlName="address" 
+              class="form-control" 
+              rows="3"
+              placeholder="Write customer address details..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="quotation-row">
+          <!-- select product -->
+          <div class="form-group">
+            <label>
+              <i class="fa-solid fa-location-dot"></i> Select Product
+            </label>
+            <select 
+              id="type" 
+              formControlName="selectedProduct" 
+              class="form-control"
+              (change)="onProductSelected($event)"
+            >
+              <option *ngFor="let product of products" value="{{ product.name }}">{{ product.name }}</option>
+            </select>
+          </div>
+        </div>
+        </form>
+    </div>
+
     <form [formGroup]="quotationForm" (ngSubmit)="onSubmit()" (keydown.enter)="$event.preventDefault()" class="quotation-form">
       <!-- Header Section -->
       <div class="header-section">
@@ -277,6 +350,48 @@
       </div>
     </form>
   </div>
+</div>
+
+<!-- Product Dialog -->
+<div class="dialog-backdrop" *ngIf="isDialogOpen" (click)="closeDialog()"></div>
+<div class="dialog" *ngIf="isDialogOpen" [@dialogAnimation]>
+  <div class="dialog-header">
+    <p style="margin-bottom: 0px;"><b>Product : </b>{{ selectedProduct }}</p>
+    <button class="close-button" (click)="closeDialog()" title="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="table-container">
+    <form [formGroup]="quotationTableForm">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Feet</th>
+            <th>Inch</th>
+            <th>R.Feet</th>
+            <th>Sq/Ft</th>
+            <th>Weight</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="rows">
+          <tr *ngFor="let row of rows?.controls; let i = index" [formGroupName]="i">
+            <td><input formControlName="feet" type="number" class="form-input" /></td>
+            <td><input formControlName="inch" type="number" class="form-input" /></td>
+            <td><input formControlName="rFeet" type="number" class="form-input" /></td>
+            <td><input formControlName="sqFt" type="number" class="form-input" /></td>
+            <td><input formControlName="weight" type="text" class="form-input" /></td>
+            <td>
+              <button type="button" (click)="deleteRow(i)" class="btn btn-delete"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <button type="button" (click)="addRow()" class="btn btn-add"><i class="fa-solid fa-plus"></i> Add Row</button>
+      <!-- <button type="submit" class="btn btn-submit">Submit</button> -->
+    </form>
+  </div>  
 </div>
 
 <app-loader *ngIf="loading"></app-loader>

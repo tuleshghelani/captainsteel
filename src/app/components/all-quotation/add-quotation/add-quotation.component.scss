@@ -60,15 +60,201 @@
     }
   }
   
+  .quotation-row {
+    display: flex;
+    .form-group {
+      width: 33.33%;
+      height: 90px;
+    }
+  }
+
+  // Move dialog styles outside of product-container
+.dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+}
+
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 12px;
+  min-width: 400px;
+  max-width: 90%;
+  width: 900px;
+  z-index: 1001;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin: 1rem;
+
+  .dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+    background-color: var(--background);
+    border-radius: 12px 12px 0 0;
+
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      i {
+        color: var(--primary);
+        font-size: 1.1em;
+      }
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+      margin: -0.5rem -0.5rem -0.5rem 0;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        color: var(--text-primary);
+      }
+
+      &:active {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+}
+
+/* Wrapper to center the table */
+.table-container {
+  width: 90%;
+  margin: 30px auto;
+  padding: 20px;
+  background-color: #f0f8ff; /* Light blue background */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Table styles */
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ddd;
+}
+
+.custom-table th, .custom-table td {
+  padding: 12px 15px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+.custom-table input {
+  width: 85%;
+}
+
+.custom-table input[type="number"]::-webkit-outer-spin-button,
+.custom-table input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide number input arrows in Firefox */
+.custom-table input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.custom-table th {
+  background-color: #0099cc; /* Light blue header */
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.custom-table tr:nth-child(even) {
+  background-color: #e6f7ff; /* Light blue for even rows */
+}
+
+.custom-table tr:nth-child(odd) {
+  background-color: #ffffff; /* White for odd rows */
+}
+
+/* Form input styling */
+.form-input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+/* Buttons styling */
+.btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-add {
+  background-color: #4CAF50;
+  color: white;
+  margin-top: 10px;
+}
+
+.btn-submit {
+  background-color: #0099cc;
+  color: white;
+}
+
+.btn-delete {
+  background-color: #ff6347;
+  color: white;
+}
+
+.btn:hover {
+  opacity: 0.8;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .table-container {
+    width: 95%;
+  }
+
+  .custom-table th, .custom-table td {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+}
+  
   // Products Section Styles
-  .products-section {
+  .create-quotation-section, .products-section {
     background-color: white;
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin-top: 2rem;
     border: 1px solid var(--primary);
   
-    .products-header {
+    .create-quotation-header ,.products-header {
       display: flex;
       justify-content: space-between;
       align-items: center;

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { formatDate } from '@angular/common';
@@ -14,6 +14,7 @@ import { SearchableSelectComponent } from '../../../shared/components/searchable
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { EncryptionService } from '../../../shared/services/encryption.service';
 import { DateUtils } from '../../../shared/utils/date-utils';
+import { animate, style, transition, trigger } from '@angular/animations';
 
 
 @Component({
@@ -25,13 +26,25 @@ import { DateUtils } from '../../../shared/utils/date-utils';
     RouterModule,
     LoaderComponent,
     SearchableSelectComponent,
-    PaginationComponent,
+    PaginationComponent
+  ],
+  animations: [
+    trigger('dialogAnimation', [
+      transition(':enter', [
+        style({ transform: 'translate(-50%, -48%) scale(0.95)', opacity: 0 }),
+        animate('200ms ease-out', style({ transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('150ms ease-in', style({ transform: 'translate(-50%, -48%) scale(0.95)', opacity: 0 }))
+      ])
+    ])
   ],
   templateUrl: './add-quotation.component.html',
   styleUrls: ['./add-quotation.component.scss']
 })
 export class AddQuotationComponent implements OnInit, OnDestroy {
   quotationForm!: FormGroup;
+  createQuotationForm!: FormGroup;
   products: any[] = [];
   customers: any[] = [];
   loading = false;
@@ -42,6 +55,9 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   isLoading = false;
   isEdit = false;
   quotationId?: number;
+  isDialogOpen = false;
+  quotationTableForm!: FormGroup;
+  selectedProduct!: string
 
   get itemsFormArray() {
     return this.quotationForm.get('items') as FormArray;
@@ -60,6 +76,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       const today = new Date();
     this.minValidUntilDate = formatDate(today, 'yyyy-MM-dd', 'en');
     this.initForm();
+    this.initCreateQuotationForm();
   }
 
   ngOnInit() {
@@ -67,11 +84,59 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.loadCustomers();
     this.setupCustomerNameSync();
     this.checkForEdit();
+
+    this.quotationTableForm = this.fb.group({
+      rows: this.fb.array([])  // An array to hold the rows
+    });
+    // Initially adding one row in table
+    this.addRow();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  get rows(): FormArray {
+    return this.quotationTableForm.get('rows') as FormArray;
+  }
+
+  addRow(): void {
+    const row = this.fb.group({
+      feet: ['', Validators.required],
+      inch: ['', Validators.required],
+      rFeet: ['', Validators.required],
+      sqFt: ['', Validators.required],
+      weight: ['', Validators.required]
+    });
+
+    this.rows.push(row);  // Add the new row to the form array
+  }
+
+  deleteRow(index: number): void {
+    if (this.rows.length > 1) {
+      this.rows.removeAt(index);  // Remove the row at the specified index
+    }
+  }
+
+  initCreateQuotationForm(){
+    this.createQuotationForm = this.fb.group({
+      customerName: ['', Validators.required],
+      contactNumber: ['', Validators.required],
+      address: ['', Validators.required],
+      selectedProduct: ['', Validators.required],
+    })
+  }
+
+  onProductSelected(event:Event){
+    const selectedProduct = (event.target as HTMLSelectElement).value;
+    console.log('selectedProduct >>>',selectedProduct, this.products)
+    this.selectedProduct = selectedProduct
+    this.isDialogOpen = true;
+  }
+
+  closeDialog(){
+    this.isDialogOpen = false;
   }
 
   private initForm() {
@@ -271,6 +336,11 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
 
   isFieldInvalid(fieldName: string): boolean {
     const field = this.quotationForm.get(fieldName);
+    return field ? field.invalid && (field.dirty || field.touched) : false;
+  }
+
+  isFieldCreateQtInvalid(fieldName: string): boolean {
+    const field = this.createQuotationForm.get(fieldName);
     return field ? field.invalid && (field.dirty || field.touched) : false;
   }
 

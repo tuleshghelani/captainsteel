@@ -13,6 +13,8 @@ export interface Product {
   totalRemainingQuantity?: number;
   createdAt?: string;
   updatedAt?: string;
+  weight: number;
+  type: string
 }
 
 export interface ProductSearchRequest {

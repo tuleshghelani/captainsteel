@@ -78,7 +78,9 @@ export class ProductComponent implements OnInit {
       minimumStock: [0, [Validators.required, Validators.min(0)]],
       purchaseAmount: [0, [Validators.required, Validators.min(0)]],
       saleAmount: [0, [Validators.required, Validators.min(0)]],
-      status: ['A', Validators.required]
+      status: ['A', Validators.required],
+      weight: [0, [Validators.required, Validators.min(0)]],
+      type: ['NOS', Validators.required],
     });
 
     this.searchForm = this.fb.group({
@@ -140,7 +142,7 @@ export class ProductComponent implements OnInit {
           this.snackbarService.success(response.message);
           this.resetForm();
           this.isLoading = false;
-          console.log('this.isEditing', this.isEditing);
+          this.isDialogOpen = false;
           if(tempIsEditing) {
             this.closeDialog();
           }
@@ -163,7 +165,9 @@ export class ProductComponent implements OnInit {
       minimumStock: product.minimumStock,
       purchaseAmount: product.purchaseAmount,
       saleAmount: product.saleAmount,
-      status: product.status
+      status: product.status,
+      weight: product.weight,
+      type: product.type
     });
     this.isDialogOpen = true;
   }
