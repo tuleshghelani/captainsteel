@@ -56,11 +56,15 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   isEdit = false;
   quotationId?: number;
   isDialogOpen = false;
-  quotationTableForm!: FormGroup;
+  // quotationTableForm!: FormGroup;
   selectedProduct!: string
 
   get itemsFormArray() {
     return this.quotationForm.get('items') as FormArray;
+  }
+
+  get quotationProductFormArray(){
+    return this.quotationForm.get('quotationProducts') as FormArray;
   }
 
   constructor(
@@ -76,7 +80,6 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       const today = new Date();
     this.minValidUntilDate = formatDate(today, 'yyyy-MM-dd', 'en');
     this.initForm();
-    this.initCreateQuotationForm();
   }
 
   ngOnInit() {
@@ -84,12 +87,10 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.loadCustomers();
     this.setupCustomerNameSync();
     this.checkForEdit();
-
-    this.quotationTableForm = this.fb.group({
-      rows: this.fb.array([])  // An array to hold the rows
-    });
+    this.addProduct()
+    // this.createQuotationTableFormGroup();
     // Initially adding one row in table
-    this.addRow();
+    // this.addRow();
   }
 
   ngOnDestroy() {
@@ -97,9 +98,9 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  get rows(): FormArray {
-    return this.quotationTableForm.get('rows') as FormArray;
-  }
+  // get rows(): FormArray {
+  //   return this.quotationTableForm.get('quotationTable') as FormArray;
+  // }
 
   addRow(): void {
     const row = this.fb.group({
@@ -109,31 +110,35 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       sqFt: ['', Validators.required],
       weight: ['', Validators.required]
     });
+    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
+      .at(this.productIndex).get('quotationTable') as FormArray;
+    quotationTable.push(row);  // Add the new row to the form array
+  }
 
-    this.rows.push(row);  // Add the new row to the form array
+  // Get the quotationTable form array for the selected product
+  getQuotationTable(): FormArray {
+    return (this.quotationForm.get('quotationProducts') as FormArray)
+      .at(this.productIndex).get('quotationTable') as FormArray;
   }
 
   deleteRow(index: number): void {
-    if (this.rows.length > 1) {
-      this.rows.removeAt(index);  // Remove the row at the specified index
+    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
+      .at(this.productIndex).get('quotationTable') as FormArray;
+    if (quotationTable.length > 1) {
+      quotationTable.removeAt(index);  // Remove the row at the specified index
     }
   }
 
-  initCreateQuotationForm(){
-    this.createQuotationForm = this.fb.group({
-      customerName: ['', Validators.required],
-      contactNumber: ['', Validators.required],
-      address: ['', Validators.required],
-      selectedProduct: ['', Validators.required],
-    })
-  }
-
-  onProductSelected(event:Event){
-    const selectedProduct = (event.target as HTMLSelectElement).value;
-    console.log('selectedProduct >>>',selectedProduct, this.products)
-    this.selectedProduct = selectedProduct
-    this.isDialogOpen = true;
-  }
+  // onProductSelected(event:Event,index:number){
+  //   const selectedProduct = (event.target as HTMLSelectElement).value;
+  //   const Products = this.quotationForm.get('quotationProducts') as FormArray
+  //   Products.at(index).get('selectedProduct')?.setValue(selectedProduct)
+  //   this.addRow()
+  //   console.log('selectedProduct >>>',selectedProduct, this.products)
+  //   console.log('quotationForm >>>',this.quotationForm.value)
+  //   this.selectedProduct = selectedProduct
+  //   this.isDialogOpen = true;
+  // }
 
   closeDialog(){
     this.isDialogOpen = false;
@@ -147,11 +152,14 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.quotationForm = this.fb.group({
       customerId: [''],
       customerName: ['', Validators.required],
+      contactNumber: ['', Validators.required],
       quoteDate: [formatDate(today, 'yyyy-MM-dd', 'en')],
       validUntil: [formatDate(validUntil, 'yyyy-MM-dd', 'en'), [Validators.required]],
       remarks: [''],
       termsConditions: [''],
-      items: this.fb.array([])
+      items: this.fb.array([]),
+      address: ['', Validators.required],
+      quotationProducts: this.fb.array([])
     });
 
     this.addItem();
@@ -167,6 +175,13 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       finalPrice: [{ value: item?.finalPrice || 0, disabled: true }]
     });
   }
+
+  // createQuotationTableFormGroup(): FormGroup {
+  //   return this.quotationTableForm = this.fb.group({
+  //     selectedProduct: ['',Validators.required],
+  //     quotationTable: this.fb.array([])  // An array to hold the rows
+  //   });
+  // }
 
   private setupCustomerNameSync() {
     this.quotationForm.get('customerId')?.valueChanges
@@ -185,6 +200,62 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     const itemGroup = this.createItemFormGroup();
     this.setupItemCalculations(itemGroup, this.itemsFormArray.length);
     this.itemsFormArray.push(itemGroup);
+  }
+
+  addProduct() {
+    const productFormGroup = this.fb.group({
+      selectedProduct: ['', Validators.required],
+      quotationTable: this.fb.array([])  // This will hold rows for the product
+    });
+  
+    (this.quotationForm.get('quotationProducts') as FormArray).push(productFormGroup);
+  }
+
+  productIndex!: number
+
+  onProductSelected(productIndex: number, event: Event) {
+    this.productIndex = productIndex;
+    const selectedProduct = (event.target as HTMLSelectElement).value;
+    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
+      .at(productIndex)
+      .get('quotationTable') as FormArray;
+  
+    // Push a new row into the quotationTable
+    quotationTable.push(this.fb.group({
+      feet: ['', Validators.required],
+      inch: ['', Validators.required],
+      rFeet: ['', Validators.required],
+      sqFt: ['', Validators.required],
+      weight: ['', Validators.required]
+    }));
+    this.selectedProduct = selectedProduct
+    this.isDialogOpen = true;
+  }  
+
+  addRowToQuotationTable(productIndex: number) {
+    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
+      .at(productIndex)
+      .get('quotationTable') as FormArray;
+  
+    quotationTable.push(this.fb.group({
+      feet: [0],
+      inch: [0],
+      rFeet: [0],
+      sqFt: [0],
+      weight: ['']
+    }));
+  }
+
+  deleteTableRow(productIndex: number, rowIndex: number) {
+    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
+      .at(productIndex)
+      .get('quotationTable') as FormArray;
+  
+    quotationTable.removeAt(rowIndex);
+  }
+
+  removeProduct(index: number) {
+    (this.quotationForm.get('quotationProducts') as FormArray).removeAt(index)
   }
 
   removeItem(index: number) {
@@ -336,11 +407,6 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
 
   isFieldInvalid(fieldName: string): boolean {
     const field = this.quotationForm.get(fieldName);
-    return field ? field.invalid && (field.dirty || field.touched) : false;
-  }
-
-  isFieldCreateQtInvalid(fieldName: string): boolean {
-    const field = this.createQuotationForm.get(fieldName);
     return field ? field.invalid && (field.dirty || field.touched) : false;
   }
 

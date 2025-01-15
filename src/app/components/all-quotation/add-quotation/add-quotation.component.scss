@@ -63,9 +63,19 @@
   .quotation-row {
     display: flex;
     .form-group {
-      width: 33.33%;
+      width: 60%;
       height: 90px;
+      margin-bottom: 0px;
     }
+    .product-delete-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+  .quotation-product {
+    border: 1px solid var(--primary);
+    padding: 20px;
   }
 
   // Move dialog styles outside of product-container
