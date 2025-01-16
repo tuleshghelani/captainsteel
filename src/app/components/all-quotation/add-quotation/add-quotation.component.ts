@@ -63,7 +63,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     return this.quotationForm.get('items') as FormArray;
   }
 
-  get quotationProductFormArray(){
+  get quotationProductFormArray() {
     return this.quotationForm.get('quotationProducts') as FormArray;
   }
 
@@ -77,7 +77,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     private dateUtils: DateUtils,
     private router: Router
   ) {
-      const today = new Date();
+    const today = new Date();
     this.minValidUntilDate = formatDate(today, 'yyyy-MM-dd', 'en');
     this.initForm();
   }
@@ -98,35 +98,23 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // get rows(): FormArray {
-  //   return this.quotationTableForm.get('quotationTable') as FormArray;
-  // }
-
   addRow(): void {
     const row = this.fb.group({
-      feet: ['', Validators.required],
-      inch: ['', Validators.required],
-      rFeet: ['', Validators.required],
-      sqFt: ['', Validators.required],
-      weight: ['', Validators.required]
+      feet: [0, Validators.required],
+      inch: [0, Validators.required],
+      rFeet: [0, Validators.required],
+      sqFt: [0, Validators.required],
+      weight: [0, Validators.required]
     });
-    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(this.productIndex).get('quotationTable') as FormArray;
-    quotationTable.push(row);  // Add the new row to the form array
+    this.quotationTableFormArray.push(row);  // Add the new row to the form array
   }
 
-  // Get the quotationTable form array for the selected product
-  getQuotationTable(): FormArray {
-    return (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(this.productIndex).get('quotationTable') as FormArray;
-  }
+  onSaveTable(){
+    console.log('onSaveTable >>>',this.quotationForm.value)
+  }  
 
-  deleteRow(index: number): void {
-    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(this.productIndex).get('quotationTable') as FormArray;
-    if (quotationTable.length > 1) {
-      quotationTable.removeAt(index);  // Remove the row at the specified index
-    }
+  deleteRow(rowIndex: number) {
+    this.quotationTableFormArray.removeAt(rowIndex);
   }
 
   // onProductSelected(event:Event,index:number){
@@ -134,13 +122,11 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   //   const Products = this.quotationForm.get('quotationProducts') as FormArray
   //   Products.at(index).get('selectedProduct')?.setValue(selectedProduct)
   //   this.addRow()
-  //   console.log('selectedProduct >>>',selectedProduct, this.products)
-  //   console.log('quotationForm >>>',this.quotationForm.value)
   //   this.selectedProduct = selectedProduct
   //   this.isDialogOpen = true;
   // }
 
-  closeDialog(){
+  closeDialog() {
     this.isDialogOpen = false;
   }
 
@@ -207,51 +193,45 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       selectedProduct: ['', Validators.required],
       quotationTable: this.fb.array([])  // This will hold rows for the product
     });
-  
+
     (this.quotationForm.get('quotationProducts') as FormArray).push(productFormGroup);
   }
 
-  productIndex!: number
+  productIndex: number = 0;
+
+  // Get the quotationTable form array for the selected product
+  get quotationTableFormArray():FormArray{
+    return (this.quotationForm.get('quotationProducts') as FormArray).at(this.productIndex).get('quotationTable') as FormArray;
+  }
 
   onProductSelected(productIndex: number, event: Event) {
     this.productIndex = productIndex;
     const selectedProduct = (event.target as HTMLSelectElement).value;
-    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(productIndex)
-      .get('quotationTable') as FormArray;
-  
+
     // Push a new row into the quotationTable
-    quotationTable.push(this.fb.group({
-      feet: ['', Validators.required],
-      inch: ['', Validators.required],
-      rFeet: ['', Validators.required],
-      sqFt: ['', Validators.required],
-      weight: ['', Validators.required]
+    this.quotationTableFormArray.push(this.fb.group({
+      feet: [0, Validators.required],
+      inch: [0, Validators.required],
+      rFeet: [0, Validators.required],
+      sqFt: [0, Validators.required],
+      weight: [0, Validators.required]
     }));
     this.selectedProduct = selectedProduct
     this.isDialogOpen = true;
-  }  
+  }
 
   addRowToQuotationTable(productIndex: number) {
-    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(productIndex)
-      .get('quotationTable') as FormArray;
-  
-    quotationTable.push(this.fb.group({
+    this.quotationTableFormArray.push(this.fb.group({
       feet: [0],
       inch: [0],
       rFeet: [0],
       sqFt: [0],
-      weight: ['']
+      weight: [0]
     }));
   }
 
   deleteTableRow(productIndex: number, rowIndex: number) {
-    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(productIndex)
-      .get('quotationTable') as FormArray;
-  
-    quotationTable.removeAt(rowIndex);
+    this.quotationTableFormArray.removeAt(rowIndex);
   }
 
   removeProduct(index: number) {
@@ -267,7 +247,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
 
   private setupItemCalculations(group: FormGroup, index: number) {
     const fields = ['quantity', 'unitPrice', 'taxPercentage', 'discountPercentage'];
-    
+
     fields.forEach(field => {
       group.get(field)?.valueChanges
         .pipe(takeUntil(this.destroy$))
@@ -295,12 +275,12 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
 
     // Calculate tax on discounted amount
     const taxAmount = (afterDiscount * values.taxPercentage) / 100;
-    
+
     // Final price is discounted amount plus tax
     const finalPrice = afterDiscount + taxAmount;
 
     // Update the form control
-    group.patchValue({ 
+    group.patchValue({
       finalPrice: Number(finalPrice.toFixed(2))
     }, { emitEvent: false });
 
@@ -382,7 +362,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   private calculateTotalAmount(): void {
     const total = this.itemsFormArray.controls
       .reduce((sum, group: any) => sum + (group.get('finalPrice').value || 0), 0);
-    
+
     this.quotationForm.patchValue({ totalAmount: total }, { emitEvent: false });
   }
 
@@ -415,18 +395,18 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     if (!control) return false;
 
     const isInvalid = control.invalid && (control.dirty || control.touched);
-    
+
     if (isInvalid) {
       const errors = control.errors;
       if (errors) {
         if (errors['required']) return true;
         if (errors['min'] && fieldName === 'quantity') return true;
         if (errors['min'] && fieldName === 'unitPrice') return true;
-        if ((errors['min'] || errors['max']) && 
-            (fieldName === 'taxPercentage' || fieldName === 'discountPercentage')) return true;
+        if ((errors['min'] || errors['max']) &&
+          (fieldName === 'taxPercentage' || fieldName === 'discountPercentage')) return true;
       }
     }
-    
+
     return false;
   }
 
@@ -512,8 +492,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     if (quotationId) {
       this.isLoading = true;
       this.quotationService.getQuotationDetail(parseInt(quotationId)).subscribe({
-        next: (response) => {
-          console.log('Quotation response:', response);
+        next: (response) => {          
           if (response) {
             this.quotationId = parseInt(quotationId);
             this.isEdit = true;
@@ -534,12 +513,12 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
 
   private populateForm(data: any): void {
     if (!data) return;
-  
+
     // Clear existing items first
     while (this.itemsFormArray.length) {
       this.itemsFormArray.removeAt(0);
     }
-  
+
     // Patch basic form values
     this.quotationForm.patchValue({
       customerName: data.customerName,
@@ -549,7 +528,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       remarks: data.remarks || '',
       termsConditions: data.termsConditions || ''
     });
-  
+
     // Add items
     if (data.items && Array.isArray(data.items)) {
       data.items.forEach((item: any) => {
@@ -571,8 +550,8 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     if (this.quotationForm.valid) {
       this.isLoading = true;
       const formData = this.prepareFormData();
-      
-      const request$ = this.isEdit 
+
+      const request$ = this.isEdit
         ? this.quotationService.updateQuotation(this.quotationId!, formData)
         : this.quotationService.createQuotation(formData);
 

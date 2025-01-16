@@ -20,8 +20,8 @@ export class EncryptionService {
   decrypt(encryptedData: string): any {
     try {
       const bytes = CryptoJS.AES.decrypt(encryptedData, this.key);
-      const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-      return JSON.parse(decryptedString);
+      const decryptedString = bytes.toString(CryptoJS.enc.Utf8);      
+      return decryptedString && JSON.parse(decryptedString);
     } catch (error) {
       console.error('Decryption error:', error);
       return null;
