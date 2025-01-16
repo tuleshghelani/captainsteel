@@ -15,7 +15,8 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 import { EncryptionService } from '../../../shared/services/encryption.service';
 import { DateUtils } from '../../../shared/utils/date-utils';
 import { animate, style, transition, trigger } from '@angular/animations';
-
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 @Component({
   selector: 'app-add-quotation',
@@ -99,32 +100,20 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   addRow(): void {
-    const row = this.fb.group({
-      feet: [0, Validators.required],
-      inch: [0, Validators.required],
+    const newRow: FormGroup = this.fb.group({
+      feet: [null, Validators.required],
+      inch: [null, Validators.required],
       rFeet: [0, Validators.required],
       sqFt: [0, Validators.required],
       weight: [0, Validators.required]
     });
-    this.quotationTableFormArray.push(row);  // Add the new row to the form array
+    if (this.selectedProductDetails.type === 'NOS') newRow.addControl('nos', this.fb.control(null, Validators.required));
+    this.quotationTableFormArray.push(newRow);  // Add the new row to the form array
   }
-
-  onSaveTable(){
-    console.log('onSaveTable >>>',this.quotationForm.value)
-  }  
 
   deleteRow(rowIndex: number) {
     this.quotationTableFormArray.removeAt(rowIndex);
   }
-
-  // onProductSelected(event:Event,index:number){
-  //   const selectedProduct = (event.target as HTMLSelectElement).value;
-  //   const Products = this.quotationForm.get('quotationProducts') as FormArray
-  //   Products.at(index).get('selectedProduct')?.setValue(selectedProduct)
-  //   this.addRow()
-  //   this.selectedProduct = selectedProduct
-  //   this.isDialogOpen = true;
-  // }
 
   closeDialog() {
     this.isDialogOpen = false;
@@ -189,45 +178,82 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   addProduct() {
+    if(this.selectedProduct === ''){
+      return this.snackbar.error('Please select product first');
+    }
     const productFormGroup = this.fb.group({
       selectedProduct: ['', Validators.required],
       quotationTable: this.fb.array([])  // This will hold rows for the product
     });
-
     (this.quotationForm.get('quotationProducts') as FormArray).push(productFormGroup);
+    this.selectedProduct = ''
   }
 
-  productIndex: number = 0;
+  productIndex!: number;
+  selectedProductDetails: any
 
   // Get the quotationTable form array for the selected product
-  get quotationTableFormArray():FormArray{
+  get quotationTableFormArray(): FormArray {
     return (this.quotationForm.get('quotationProducts') as FormArray).at(this.productIndex).get('quotationTable') as FormArray;
   }
 
   onProductSelected(productIndex: number, event: Event) {
     this.productIndex = productIndex;
-    const selectedProduct = (event.target as HTMLSelectElement).value;
+    this.selectedProduct = (event.target as HTMLSelectElement).value;
+    this.selectedProductDetails = this.products.find((product) => product.name === this.selectedProduct)
 
     // Push a new row into the quotationTable
-    this.quotationTableFormArray.push(this.fb.group({
-      feet: [0, Validators.required],
-      inch: [0, Validators.required],
+    const newRow: FormGroup = this.fb.group({
+      feet: [null, Validators.required],
+      inch: [null, Validators.required],
       rFeet: [0, Validators.required],
       sqFt: [0, Validators.required],
-      weight: [0, Validators.required]
-    }));
-    this.selectedProduct = selectedProduct
+      weight: [0, Validators.required],
+    });
+
+    if (this.selectedProductDetails.type === 'NOS') newRow.addControl('nos', this.fb.control(null, Validators.required));
+    this.quotationTableFormArray.clear(); // firs clear table while change product
+    this.quotationTableFormArray.push(newRow);
     this.isDialogOpen = true;
+    console.log('selectedProductDetails >>>', this.selectedProductDetails)
+
+    this.quotationTableFormArray.valueChanges.subscribe((rows) => {
+      rows.forEach((row: any, index: number) => {
+        const rFeet = this.selectedProductDetails.type === 'NOS' ? (row.feet + row.inch / 12) * row.nos : (row.feet + row.inch / 12);
+        const sqFt = rFeet * 3.5;
+        const weight = rFeet * this.selectedProductDetails.weight; // weight based on product
+        // Access the specific FormGroup and update the controls
+        const formGroup = this.quotationTableFormArray.at(index) as FormGroup;
+        formGroup.get('rFeet')?.setValue(rFeet, { emitEvent: false }); // Prevent infinite loop
+        formGroup.get('sqFt')?.setValue(sqFt, { emitEvent: false });
+        formGroup.get('weight')?.setValue(weight, { emitEvent: false });
+      });
+    });
   }
 
   addRowToQuotationTable(productIndex: number) {
-    this.quotationTableFormArray.push(this.fb.group({
-      feet: [0],
-      inch: [0],
-      rFeet: [0],
-      sqFt: [0],
-      weight: [0]
-    }));
+    const newRow: FormGroup = this.fb.group({
+      feet: [null, Validators.required],
+      inch: [null, Validators.required],
+      rFeet: [0, Validators.required],
+      sqFt: [0, Validators.required],
+      weight: [0, Validators.required],
+    });
+    if (this.selectedProductDetails.type === 'NOS') newRow.addControl('nos', this.fb.control(0, Validators.required));
+    this.quotationTableFormArray.push(newRow);
+  }
+
+  editSelectedProductTable(index: number) {
+    if(this.selectedProduct === ''){
+      return this.snackbar.error('Please select product first');
+    }
+    // Set the productIndex to the selected index
+    this.productIndex = index;
+    // Get the specific FormArray for the selected product's quotation table
+    const editProductTable = (this.quotationForm.get('quotationProducts') as FormArray).at(this.productIndex).get('quotationTable') as FormArray;
+    console.log('editProductTable.value >>>',editProductTable.value)
+    // Open the dialog
+    this.isDialogOpen = true;
   }
 
   deleteTableRow(productIndex: number, rowIndex: number) {
@@ -431,18 +457,18 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     });
   }
 
-  onProductSelect(index: number): void {
-    const productId = this.itemsFormArray.at(index).get('productId')?.value;
-    if (productId) {
-      const selectedProduct = this.products.find(p => p.id === productId);
-      if (selectedProduct) {
-        this.itemsFormArray.at(index).patchValue({
-          unitPrice: selectedProduct.sale_amount,
-          taxPercentage: selectedProduct.tax_percentage || 0
-        }, { emitEvent: true });
-      }
-    }
-  }
+  // onProductSelect(index: number): void {
+  //   const productId = this.itemsFormArray.at(index).get('productId')?.value;
+  //   if (productId) {
+  //     const selectedProduct = this.products.find(p => p.id === productId);
+  //     if (selectedProduct) {
+  //       this.itemsFormArray.at(index).patchValue({
+  //         unitPrice: selectedProduct.sale_amount,
+  //         taxPercentage: selectedProduct.tax_percentage || 0
+  //       }, { emitEvent: true });
+  //     }
+  //   }
+  // }
 
   validateDates(): void {
     const quoteDate = this.quotationForm.get('quoteDate')?.value;
@@ -492,7 +518,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     if (quotationId) {
       this.isLoading = true;
       this.quotationService.getQuotationDetail(parseInt(quotationId)).subscribe({
-        next: (response) => {          
+        next: (response) => {
           if (response) {
             this.quotationId = parseInt(quotationId);
             this.isEdit = true;
@@ -584,5 +610,29 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     };
   }
 
-  // Add other utility methods as needed
+  downloadPDF(): void {
+    const tableData = (this.quotationForm.get('quotationProducts') as FormArray).at(this.productIndex).get('quotationTable') as FormArray
+    if(!tableData.valid){
+      return this.snackbar.error('Please fill-up the table inputs')
+    }
+    const doc = new jsPDF();
+
+    // Define table columns and rows
+    const columns = Object.keys(tableData.value[0])
+    const rows = tableData.value.map((item:any) => columns.map(col => item[col] || '')); // If field is missing, set as empty
+    
+    // Add a title to the PDF
+    doc.text(this.selectedProduct, 14, 10);
+
+    // Add the table to the PDF
+    (doc as any).autoTable({
+      head: [columns],
+      body: rows,
+      startY: 20,
+    });
+
+    // Save the PDF
+    doc.save(`${this.selectedProduct} table.pdf`);
+  }
+  
 }
