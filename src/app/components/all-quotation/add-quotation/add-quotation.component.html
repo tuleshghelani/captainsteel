@@ -104,7 +104,7 @@
                 <label>
                   <i class="fas fa-boxes"></i> Select Product
                 </label>
-                <select id="type" formControlName="selectedProduct" class="form-control"
+                <select id="type" formControlName="productName" class="form-control"
                   (change)="onProductSelected(i, $event)">
                   <option *ngFor="let product of products" value="{{ product.name }}">{{ product.name }}</option>
                 </select>
@@ -242,7 +242,7 @@
         </button>
         <button type="submit" class="btn btn-primary" [disabled]="quotationForm.invalid || loading">
           <i class="fas" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-save'"></i>
-          {{ loading ? 'Saving...' : 'Save Quotation' }}
+          {{ loading ? 'Saving...' : 'Save Quotation' }}{{quotationForm.invalid}}
         </button>
       </div>
     </form>
@@ -274,9 +274,9 @@
         </thead>
         <tbody formArrayName="quotationProducts">
           <ng-container *ngFor="let quotationProduct of quotationProductFormArray.controls; let i=index" [formGroupName]="i">
-            <ng-container formArrayName="quotationTable">
+            <ng-container formArrayName="productTable">
               <tr *ngFor="let row of quotationTableFormArray?.controls; let i = index" [formGroupName]="i">
-                <ng-container *ngIf="quotationProduct.get('selectedProduct')?.value === selectedProductDetails.name"> <!-- only display selected product table rows -->
+                <ng-container *ngIf="quotationProduct.get('productName')?.value === selectedProductDetails.name"> <!-- only display selected product table rows -->
                   <td><input formControlName="feet" type="number" class="form-input" /></td>
                   <td><input formControlName="inch" type="number" class="form-input" /></td>
                   <td *ngIf="selectedProductDetails.type === 'NOS'"><input formControlName="nos" type="number" class="form-input" /></td> <!-- optionaly -->
