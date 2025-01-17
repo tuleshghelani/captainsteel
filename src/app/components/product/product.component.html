@@ -228,7 +228,29 @@
           class="form-control"
         >
           <option value="NOS">NOS</option>
+          <option value="REGULAR">REGULAR</option>
+          <option value="POLYCARBONATE">POLYCARBONATE</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="productForm.get('type')?.value !== 'NOS'">
+        <label for="type">
+          <i class="fa-solid fa-list"></i> Sub Product Type
+        </label>
+        <select 
+          id="type" 
+          formControlName="subType" 
+          class="form-control"
+        >
+        <ng-container *ngIf="productForm.get('type')?.value === 'REGULAR'">
+          <option value="SF">SF</option>
           <option value="MM">MM</option>
+        </ng-container>
+        <ng-container *ngIf="productForm.get('type')?.value === 'POLYCARBONATE'">
+          <option value="SINGLE">SINGLE</option>
+          <option value="DOUBLE">DOUBLE</option>
+          <option value="TRIPLE">TRIPLE</option>
+        </ng-container>
         </select>
       </div>
 

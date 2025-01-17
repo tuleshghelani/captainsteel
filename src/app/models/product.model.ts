@@ -14,7 +14,8 @@ export interface Product {
   createdAt?: string;
   updatedAt?: string;
   weight: number;
-  type: string
+  type: 'NOS' | 'REGULAR' | 'POLYCARBONATE',
+  subType: 'SF' | 'MM' | 'SINGLE' | 'DOUBLE' | 'TRIPLE'
 }
 
 export interface ProductSearchRequest {

@@ -47,7 +47,7 @@
   background-color: var(--background-light);
   border-radius: var(--border-radius);
   padding: 1.5rem;
-  margin-bottom: 2rem;
+  // margin-bottom: 2rem;
 
   .form-row {
     display: grid;
@@ -69,7 +69,7 @@
     margin-bottom: 0px;
   }
 
-  .product-delete-btn {
+  .product-action-btn {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -240,6 +240,7 @@
   color: white;
   margin-top: 10px;
 }
+
 .btn-danger {
   background-color: red;
   color: white;
@@ -461,6 +462,7 @@
   margin: 0 -1.5rem;
   padding: 0 1.5rem;
   overflow-x: auto;
+  height: auto;
   -webkit-overflow-scrolling: touch;
 
   @media (max-width: 768px) {

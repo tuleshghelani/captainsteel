@@ -89,32 +89,6 @@
               </div>
             </div>
           </div>
-
-          <div class="quotation-product" formArrayName="quotationProducts">
-            <div class="products-header">
-              <h3><i class="fas fa-boxes"></i> Products </h3>
-              <button type="button" class="btn btn-primary" (click)="addProduct()">
-                <i class="fas fa-plus"></i> Add Product
-              </button>
-            </div>
-            <!-- select product -->
-            <div class="quotation-row" *ngFor="let quotationProduct of quotationProductFormArray.controls; let i=index"
-              [formGroupName]="i">
-              <div class="form-group">
-                <label>
-                  <i class="fas fa-boxes"></i> Select Product
-                </label>
-                <select id="type" formControlName="productName" class="form-control"
-                  (change)="onProductSelected(i, $event)">
-                  <option *ngFor="let product of products" value="{{ product.name }}">{{ product.name }}</option>
-                </select>
-              </div>
-              <div class="product-delete-btn">
-                <button type="button" (click)="editSelectedProductTable(i)" class="btn btn-success"><i class="fa-solid fa-pen"></i> Edit Table</button>&nbsp;&nbsp;
-                <button type="button" (click)="removeProduct(i)" class="btn btn-delete"><i class="fa-solid fa-trash"></i></button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -132,10 +106,10 @@
             <thead>
               <tr>
                 <th>Product</th>
-                <th>Quantity</th>
+                <th *ngIf="selectedProductDetails?.type === 'NOS'">Quantity</th>
                 <th>Unit Price</th>
-                <th>Discount %</th>
-                <th>Tax %</th>
+                <!-- <th>Discount %</th>
+                <th>Tax %</th> -->
                 <th>Final Price</th>
                 <th>Actions</th>
               </tr>
@@ -150,7 +124,7 @@
                 </td>
 
                 <!-- Quantity -->
-                <td>
+                <td *ngIf="selectedProductDetails?.type === 'NOS'">
                   <input type="number" formControlName="quantity" class="form-control"
                     [class.is-invalid]="isItemFieldInvalid(i, 'quantity')" min="1">
                 </td>
@@ -164,24 +138,6 @@
                   </div>
                 </td>
 
-                <!-- Discount % -->
-                <td>
-                  <div class="input-group">
-                    <input type="number" formControlName="discountPercentage" class="form-control" readonly="true"
-                      [class.is-invalid]="isItemFieldInvalid(i, 'discountPercentage')" min="0" max="100" step="0.01">
-                    <span class="input-group-text">%</span>
-                  </div>
-                </td>
-
-                <!-- Tax % -->
-                <td>
-                  <div class="input-group">
-                    <input type="number" formControlName="taxPercentage" class="form-control"
-                      [class.is-invalid]="isItemFieldInvalid(i, 'taxPercentage')" min="0" max="100" step="0.01">
-                    <span class="input-group-text">%</span>
-                  </div>
-                </td>
-
                 <!-- Final Price -->
                 <td>
                   <div class="input-group">
@@ -192,10 +148,13 @@
 
                 <!-- Actions -->
                 <td>
-                  <button type="button" class="btn-icon remove-product" (click)="removeItem(i)"
-                    [disabled]="itemsFormArray.length === 1">
-                    <i class="fas fa-trash"></i>
-                  </button>
+                  <div class="product-action-btn">
+                    <button type="button" *ngIf="selectedProductDetails && selectedProductDetails !== 'NOS'" (click)="editSelectedProductTable(i)" class="btn btn-success">
+                      <i class="fa-solid fa-pen"></i> Edit Table</button>&nbsp;&nbsp;
+                    <button type="button" (click)="removeItem(i)" class="btn btn-delete"
+                      [disabled]="itemsFormArray.length === 1">
+                      <i class="fa-solid fa-trash"></i></button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -240,9 +199,10 @@
         <button type="button" class="btn btn-secondary" (click)="resetForm()" [disabled]="loading">
           <i class="fas fa-undo"></i> Reset
         </button>
-        <button type="submit" class="btn btn-primary" [disabled]="quotationForm.invalid || loading">
+        <button type="submit" class="btn btn-primary">
+          <!-- [disabled]="quotationForm.invalid || loading" -->
           <i class="fas" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-save'"></i>
-          {{ loading ? 'Saving...' : 'Save Quotation' }}{{quotationForm.invalid}}
+          {{ loading ? 'Saving...' : 'Save Quotation' }}
         </button>
       </div>
     </form>
@@ -262,29 +222,47 @@
     <form [formGroup]="quotationForm">
       <table class="custom-table">
         <thead>
-          <tr>
+          <tr *ngIf="selectedProductDetails.type === 'REGULAR' && selectedProductDetails.subType === 'SF'">
             <th>Feet</th>
             <th>Inch</th>
-            <th *ngIf="selectedProductDetails.type === 'NOS'">NOS</th>
+            <th>NOS</th>
             <th>R.Feet</th>
             <th>Sq/Ft</th>
             <th>Weight</th>
             <th>Actions</th>
           </tr>
+          <tr *ngIf="selectedProductDetails.type === 'REGULAR' && selectedProductDetails.subType === 'MM'">
+            <th>size in MM</th>
+            <th>size in R.Feet</th>
+            <th>NOS</th>
+            <th>R.Feet</th>
+            <th>Actions</th>
+          </tr>
         </thead>
-        <tbody formArrayName="quotationProducts">
-          <ng-container *ngFor="let quotationProduct of quotationProductFormArray.controls; let i=index" [formGroupName]="i">
+        <tbody formArrayName="items">
+          <ng-container *ngFor="let item of itemsFormArray.controls; let i=index" [formGroupName]="i">
             <ng-container formArrayName="productTable">
-              <tr *ngFor="let row of quotationTableFormArray?.controls; let i = index" [formGroupName]="i">
-                <ng-container *ngIf="quotationProduct.get('productName')?.value === selectedProductDetails.name"> <!-- only display selected product table rows -->
-                  <td><input formControlName="feet" type="number" class="form-input" /></td>
-                  <td><input formControlName="inch" type="number" class="form-input" /></td>
-                  <td *ngIf="selectedProductDetails.type === 'NOS'"><input formControlName="nos" type="number" class="form-input" /></td> <!-- optionaly -->
-                  <td><input formControlName="rFeet" type="number" class="form-input" readonly /></td>
-                  <td><input formControlName="sqFt" type="number" class="form-input" readonly /></td>
-                  <td><input formControlName="weight" type="number" class="form-input" readonly /></td>
+              <tr *ngFor="let row of quotationTableFormArray?.controls; let j = index" [formGroupName]="j">
+                <ng-container *ngIf="item.get('productId')?.value === selectedProductDetails.id">
+                  <ng-container
+                    *ngIf="selectedProductDetails.type === 'REGULAR' && selectedProductDetails.subType === 'SF'">
+                    <!-- only display selected product table rows -->
+                    <td><input formControlName="feet" type="number" class="form-input" /></td>
+                    <td><input formControlName="inch" type="number" class="form-input" /></td>
+                    <td><input formControlName="nos" type="number" class="form-input" /></td>
+                    <td><input formControlName="rFeet" type="number" class="form-input" readonly /></td>
+                    <td><input formControlName="sqFt" type="number" class="form-input" readonly /></td>
+                    <td><input formControlName="weight" type="number" class="form-input" readonly /></td>
+                  </ng-container>
+                  <ng-container
+                    *ngIf="selectedProductDetails.type === 'REGULAR' && selectedProductDetails.subType === 'MM'">
+                    <td><input formControlName="sizeInMM" type="number" class="form-input" /></td>
+                    <td><input formControlName="sizeInRFeet" type="number" class="form-input" /></td>
+                    <td><input formControlName="nos" type="number" class="form-input" /></td>
+                    <td><input formControlName="rFeet" type="number" class="form-input" readonly /></td>
+                  </ng-container>
                   <td>
-                    <button type="button" (click)="deleteRow(i)" class="btn btn-delete"><i
+                    <button type="button" (click)="deleteRow(j)" class="btn btn-delete"><i
                         class="fa-solid fa-trash"></i></button>
                   </td>
                 </ng-container>

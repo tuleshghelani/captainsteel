@@ -81,6 +81,7 @@ export class ProductComponent implements OnInit {
       status: ['A', Validators.required],
       weight: [0, [Validators.required, Validators.min(0)]],
       type: ['NOS', Validators.required],
+      subType: [''],
     });
 
     this.searchForm = this.fb.group({
@@ -167,7 +168,8 @@ export class ProductComponent implements OnInit {
       saleAmount: product.saleAmount,
       status: product.status,
       weight: product.weight,
-      type: product.type
+      type: product.type,
+      subType: product?.subType,
     });
     this.isDialogOpen = true;
   }

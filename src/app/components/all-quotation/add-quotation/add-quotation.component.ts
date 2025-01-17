@@ -63,9 +63,9 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     return this.quotationForm.get('items') as FormArray;
   }
 
-  get quotationProductFormArray() {
-    return this.quotationForm.get('quotationProducts') as FormArray;
-  }
+  // get quotationProductFormArray() {
+  //   return this.quotationForm.get('quotationProducts') as FormArray;
+  // }
 
   constructor(
     private fb: FormBuilder,
@@ -87,7 +87,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.loadCustomers();
     this.setupCustomerNameSync();
     this.checkForEdit();
-    this.addProduct()
+    // this.addProduct()
   }
 
   ngOnDestroy() {
@@ -96,15 +96,32 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   addRow(): void {
-    const newRow: FormGroup = this.fb.group({
-      feet: [null, Validators.required],
-      inch: [null, Validators.required],
-      rFeet: [0, Validators.required],
-      sqFt: [0, Validators.required],
-      weight: [0, Validators.required]
-    });
-    if (this.selectedProductDetails.type === 'NOS') newRow.addControl('nos', this.fb.control(null, Validators.required));
+    const newRow = this.prepareTableRow();
     this.quotationTableFormArray.push(newRow);  // Add the new row to the form array
+  }
+
+  prepareTableRow() {
+    const isSF = this.selectedProductDetails.type === 'REGULAR' && this.selectedProductDetails.subType === 'SF';
+    const isMM = this.selectedProductDetails.type === 'REGULAR' && this.selectedProductDetails.subType === 'MM';
+    return this.fb.group(
+      isSF
+        ? {
+          feet: [null, Validators.required],
+          inch: [null, Validators.required],
+          nos: [null, Validators.required],
+          rFeet: [0, Validators.required],
+          sqFt: [0, Validators.required],
+          weight: [0, Validators.required],
+        }
+        : isMM
+          ? {
+            sizeInMM: [null, Validators.required],
+            sizeInRFeet: [null, Validators.required],
+            nos: [null, Validators.required],
+            rFeet: [0, Validators.required],
+          }
+          : {}
+    );
   }
 
   deleteRow(rowIndex: number) {
@@ -113,6 +130,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
 
   closeDialog() {
     this.isDialogOpen = false;
+    localStorage.removeItem('productTable');
   }
 
   private initForm() {
@@ -129,8 +147,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       remarks: [''],
       termsConditions: [''],
       items: this.fb.array([]),
-      address: ['', Validators.required],
-      quotationProducts: this.fb.array([])
+      address: ['', Validators.required]
     });
 
     this.addItem();
@@ -141,9 +158,10 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       productId: [item?.productId || '', Validators.required],
       quantity: [item?.quantity || 1, [Validators.required, Validators.min(1)]],
       unitPrice: [item?.unitPrice || '', [Validators.required, Validators.min(0.01)]],
-      taxPercentage: [item?.taxPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
-      discountPercentage: [18, [Validators.required, Validators.min(0), Validators.max(100)]],
-      finalPrice: [{ value: item?.finalPrice || 0, disabled: true }]
+      taxPercentage: [18, [Validators.required, Validators.min(0), Validators.max(100)]],
+      discountPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      finalPrice: [{ value: item?.finalPrice || 0, disabled: true }],
+      productTable: this.fb.array([])
     });
   }
 
@@ -161,54 +179,48 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   addItem() {
-    const itemGroup = this.createItemFormGroup();
-    this.setupItemCalculations(itemGroup, this.itemsFormArray.length);
-    this.itemsFormArray.push(itemGroup);
-  }
-
-  addProduct() {
-    if(this.selectedProduct === ''){
+    if (this.selectedProduct === '') {
       return this.snackbar.error('Please select product first');
     }
-    const productFormGroup = this.fb.group({
-      productName: ['', Validators.required],
-      productTable: this.fb.array([])  // This will hold rows for the product
+
+    const itemGroup = this.createItemFormGroup();
+
+    this.setupItemCalculations(itemGroup, this.itemsFormArray.length);
+    this.itemsFormArray.push(itemGroup);
+
+    this.itemsFormArray.controls.forEach((group, index) => {
+      group.get('productId')?.valueChanges.subscribe((value) => {
+        this.productIndex = index;
+        this.selectedProductDetails = this.products.find(product => product.id === value);
+        console.log('selected product >>>>', this.selectedProductDetails, index)
+        this.selectedProduct = this.selectedProductDetails.name;
+        const newRow = this.prepareTableRow();
+        // if(this.selectedProductDetails?.type === "NOS"){
+        //   ((this.quotationForm.get('items') as FormArray).at(index) as FormGroup).removeControl('productTable')
+        //   this.quotationForm.updateValueAndValidity();
+        // }
+        this.quotationTableFormArray?.clear(); // firs clear table while change product
+        this.quotationTableFormArray?.push(newRow)
+        this.calculateTableFieldLogic(index)
+        console.log(this.selectedProductDetails.type)
+        if (this.selectedProductDetails.type !== 'NOS') this.isDialogOpen = true;
+      });
     });
-    (this.quotationForm.get('quotationProducts') as FormArray).push(productFormGroup);
     this.selectedProduct = ''
   }
 
-  productIndex!: number;
-  selectedProductDetails: any
-
-  // Get the productTable form array for the selected product
-  get quotationTableFormArray(): FormArray {
-    return (this.quotationForm.get('quotationProducts') as FormArray).at(this.productIndex).get('productTable') as FormArray;
-  }
-
-  onProductSelected(productIndex: number, event: Event) {
-    this.productIndex = productIndex;
-    this.selectedProduct = (event.target as HTMLSelectElement).value;
-    this.selectedProductDetails = this.products.find((product) => product.name === this.selectedProduct)
-
-    // Push a new row into the productTable
-    const newRow: FormGroup = this.fb.group({
-      feet: [null, Validators.required],
-      inch: [null, Validators.required],
-      rFeet: [0, Validators.required],
-      sqFt: [0, Validators.required],
-      weight: [0, Validators.required],
-    });
-
-    if (this.selectedProductDetails.type === 'NOS') newRow.addControl('nos', this.fb.control(null, Validators.required));
-    this.quotationTableFormArray.clear(); // firs clear table while change product
-    this.quotationTableFormArray.push(newRow);
-    this.isDialogOpen = true;
-    console.log('selectedProductDetails >>>', this.selectedProductDetails)
-
+  calculateTableFieldLogic(index: number) {
     this.quotationTableFormArray.valueChanges.subscribe((rows) => {
+      const quantity = this.itemsFormArray.at(index).value.quantity;
       rows.forEach((row: any, index: number) => {
-        const rFeet = this.selectedProductDetails.type === 'NOS' ? (row.feet + row.inch / 12) * row.nos : (row.feet + row.inch / 12);
+        let rFeet
+        if (this.selectedProductDetails.type === 'NOS') {
+          rFeet = (row.feet + row.inch / 12) * quantity
+        } else if (this.selectedProductDetails.type === 'REGULAR' && this.selectedProductDetails.subType === 'SF') {
+          rFeet = (row.feet + row.inch / 12) * row.nos
+        } else {
+          rFeet = (row.feet + row.inch / 12)
+        }
         const sqFt = rFeet * 3.5;
         const weight = rFeet * this.selectedProductDetails.weight; // weight based on product
         // Access the specific FormGroup and update the controls
@@ -220,37 +232,55 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     });
   }
 
-  addRowToQuotationTable(productIndex: number) {
-    const newRow: FormGroup = this.fb.group({
-      feet: [null, Validators.required],
-      inch: [null, Validators.required],
-      rFeet: [0, Validators.required],
-      sqFt: [0, Validators.required],
-      weight: [0, Validators.required],
-    });
-    if (this.selectedProductDetails.type === 'NOS') newRow.addControl('nos', this.fb.control(0, Validators.required));
-    this.quotationTableFormArray.push(newRow);
+  productIndex!: number;
+  selectedProductDetails: any
+
+  // Get the productTable form array for the selected product
+  get quotationTableFormArray(): FormArray {
+    return (this.quotationForm.get('items') as FormArray).at(this.productIndex).get('productTable') as FormArray;
   }
+
+  // get quotationTableFormArray(): FormArray {
+  //   return (this.quotationForm.get('quotationProducts') as FormArray).at(this.productIndex).get('productTable') as FormArray;
+  // }
 
   editSelectedProductTable(index: number) {
-    if(this.selectedProduct === ''){
-      return this.snackbar.error('Please select product first');
+    // Validate product selection
+    if (!this.selectedProductDetails || this.selectedProductDetails.name === '') {
+      return this.snackbar.error('Please select a product first');
     }
-    // Set the productIndex to the selected index
+
+    // Set the product index
     this.productIndex = index;
-    // Get the specific FormArray for the selected product's quotation table
-    const editProductTable = (this.quotationForm.get('quotationProducts') as FormArray).at(this.productIndex).get('productTable') as FormArray;
-    console.log('editProductTable.value >>>',editProductTable.value)
+
+    // Check if `productTableArray` exists and has data
+    if (!this.quotationTableFormArray || this.quotationTableFormArray.length === 0) {
+      return this.snackbar.error('No table data available for the selected product');
+    }
+
+    // Temporarily store the product table data in localStorage (optional)
+    const productTableData = this.quotationTableFormArray.value;
+    localStorage.setItem('productTable', JSON.stringify(productTableData));
+
+    // Clear the dialog's `quotationTableFormArray` to prepare for new data
+    this.quotationTableFormArray.clear();
+
+    // Populate `quotationTableFormArray` with the selected product's table data
+    productTableData.forEach((row: any) => {
+      this.quotationTableFormArray.push(
+        this.fb.group({
+          feet: [row.feet || 0, Validators.required],
+          inch: [row.inch || 0, Validators.required],
+          nos: [row.nos || 0],
+          rFeet: [row.rFeet || 0],
+          sqFt: [row.sqFt || 0],
+          weight: [row.weight || 0],
+        })
+      );
+    });
+
     // Open the dialog
     this.isDialogOpen = true;
-  }
-
-  deleteTableRow(productIndex: number, rowIndex: number) {
-    this.quotationTableFormArray.removeAt(rowIndex);
-  }
-
-  removeProduct(index: number) {
-    (this.quotationForm.get('quotationProducts') as FormArray).removeAt(index)
   }
 
   removeItem(index: number) {
@@ -277,8 +307,8 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     const values = {
       quantity: group.get('quantity')?.value || 0,
       unitPrice: group.get('unitPrice')?.value || 0,
-      discountPercentage: 18,
-      taxPercentage: group.get('taxPercentage')?.value || 0
+      discountPercentage: 0,
+      taxPercentage: 18 // group.get('taxPercentage')?.value
     };
 
     // Calculate base price
@@ -313,7 +343,45 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.productService.getProducts({ status: 'A' }).subscribe({
       next: (response) => {
         if (response.success) {
-          this.products = response.data;
+          this.products = [ //response.data;
+            {
+              "purchase_amount": 30,
+              "name": "JSW",
+              "weight": 0.50,
+              "id": 1,
+              "type": "REGULAR",
+              "subType": "SF",
+              "sale_amount": 50
+            },
+            {
+              "purchase_amount": 230,
+              "name": "ESSAR",
+              "weight": 0.60,
+              "id": 2,
+              "type": "REGULAR",
+              "subType": "MM",
+              "sale_amount": 240
+            },
+            {
+              "purchase_amount": 15,
+              "name": "POLY CARBON PRODUCT",
+              "weight": null,
+              "id": 3,
+              "type": "POLYCARBONATE",
+              "subType": "SINGLE",
+              "sale_amount": 19.8
+            },
+            {
+              "purchase_amount": 30,
+              "name": "Screw",
+              "weight": 0,
+              "id": 4,
+              "type": "NOS",
+              "subType": "",
+              "sale_amount": 50
+            },
+          ]
+          console.log('all products >>>', this.products)
         }
         this.isLoadingProducts = false;
       },
@@ -520,6 +588,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
           taxPercentage: item.taxPercentage,
           discountPercentage: item.discountPercentage,
           finalPrice: item.finalPrice
+          // todo: set productTable data
         });
         this.setupItemCalculations(itemGroup, this.itemsFormArray.length);
         this.itemsFormArray.push(itemGroup);
@@ -528,6 +597,8 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    console.log('onSubmit >>>>>', this.quotationForm.value)
+    return
     if (this.quotationForm.valid) {
       this.isLoading = true;
       const formData = this.prepareFormData();
@@ -566,17 +637,16 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   downloadPDF(): void {
-    console.log('quotationForm >>>',this.quotationForm.value)
-    const tableData = (this.quotationForm.get('quotationProducts') as FormArray).at(this.productIndex).get('productTable') as FormArray
-    if(!tableData.valid){
+    const tableData = (this.quotationForm.get('items') as FormArray).at(this.productIndex).get('productTable') as FormArray
+    if (!tableData.valid) {
       return this.snackbar.error('Please fill-up the table inputs')
     }
     const doc = new jsPDF();
 
     // Define table columns and rows
     const columns = Object.keys(tableData.value[0])
-    const rows = tableData.value.map((item:any) => columns.map(col => item[col] || '')); // If field is missing, set as empty
-    
+    const rows = tableData.value.map((item: any) => columns.map(col => item[col] || '')); // If field is missing, set as empty
+
     // Add a title to the PDF
     doc.text(this.selectedProduct, 14, 10);
 
@@ -590,5 +660,5 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     // Save the PDF
     doc.save(`${this.selectedProduct} table.pdf`);
   }
-  
+
 }
