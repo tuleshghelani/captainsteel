@@ -124,15 +124,13 @@
             </div>
           </div>
 
-          <div class="quotation-product" formArrayName="quotationProducts">
+          <!-- <div class="quotation-product" formArrayName="quotationProducts">
             <div class="products-header">
               <h3><i class="fas fa-boxes"></i> Products </h3>
               <button type="button" class="btn btn-primary" (click)="addProduct()">
                 <i class="fas fa-plus"></i> Add Product
               </button>
             </div>
-            <!-- select product -->
-            <!-- <div class="products-section" > -->
             <div class="quotation-row" *ngFor="let quotationProduct of quotationProductFormArray.controls; let i=index" [formGroupName]="i">
               <div class="form-group">
                 <label>
@@ -151,7 +149,7 @@
                 <button type="button" (click)="removeProduct(i)" class="btn btn-delete"><i class="fa-solid fa-trash"></i></button>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -181,14 +179,25 @@
                 <tr *ngFor="let item of itemsFormArray.controls; let i=index" [formGroupName]="i">
                   <!-- Product Selection -->
                   <td>
-                    <app-searchable-select
-                      formControlName="productId"
-                      [options]="products"
-                      labelKey="name"
-                      valueKey="id"
-                      [placeholder]="'Select Product'"
-                      [class.is-invalid]="isItemFieldInvalid(i, 'productId')"
-                    ></app-searchable-select>
+                    <div class="select-group">
+                      <app-searchable-select
+                        formControlName="productId"
+                        [options]="products"
+                        labelKey="name"
+                        valueKey="id"
+                        [placeholder]="'Select Product'"
+                        [class.is-invalid]="isItemFieldInvalid(i, 'productId')"
+                      ></app-searchable-select>
+                      <button 
+                        type="button" 
+                        class="btn-icon refresh" 
+                        (click)="refreshProducts()" 
+                        [disabled]="isLoadingProducts"
+                        title="Refresh Products"
+                      >
+                        <i class="fas" [ngClass]="isLoadingProducts ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
+                      </button>
+                    </div>
                   </td>
 
                   <!-- Quantity -->

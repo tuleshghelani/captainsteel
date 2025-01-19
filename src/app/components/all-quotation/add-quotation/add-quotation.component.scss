@@ -529,3 +529,42 @@
     }
   }
   
+.select-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+
+  app-searchable-select {
+    flex: 1;
+  }
+
+  .btn-icon.refresh {
+    padding: 0.75rem;
+    height: 35px;
+    width: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--supporting);
+    border-radius: 8px;
+    background: white;
+    transition: all 0.3s ease;
+    color: var(--primary);
+
+    &:hover:not(:disabled) {
+      background: var(--primary);
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    i {
+      font-size: 1rem;
+    }
+  }
+}
+  

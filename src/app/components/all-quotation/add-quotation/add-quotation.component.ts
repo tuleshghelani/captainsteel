@@ -16,6 +16,12 @@ import { EncryptionService } from '../../../shared/services/encryption.service';
 import { DateUtils } from '../../../shared/utils/date-utils';
 import { animate, style, transition, trigger } from '@angular/animations';
 
+interface ProductOption {
+  id: number;
+  name: string;
+  sale_amount: number;
+  tax_percentage: number;
+}
 
 @Component({
   selector: 'app-add-quotation',
@@ -56,7 +62,6 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   isEdit = false;
   quotationId?: number;
   isDialogOpen = false;
-  // quotationTableForm!: FormGroup;
   selectedProduct!: string
 
   get itemsFormArray() {
@@ -202,35 +207,37 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.itemsFormArray.push(itemGroup);
   }
 
-  addProduct() {
-    const productFormGroup = this.fb.group({
+  private createProductFormGroup(): FormGroup {
+    return this.fb.group({
       selectedProduct: ['', Validators.required],
-      quotationTable: this.fb.array([])  // This will hold rows for the product
+      quotationTable: this.fb.array([])
     });
-  
-    (this.quotationForm.get('quotationProducts') as FormArray).push(productFormGroup);
+  }
+
+  addProduct() {
+    const productGroup = this.createProductFormGroup();
+    this.quotationProductFormArray.push(productGroup);
   }
 
   productIndex!: number
 
-  onProductSelected(productIndex: number, event: Event) {
-    this.productIndex = productIndex;
-    const selectedProduct = (event.target as HTMLSelectElement).value;
-    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(productIndex)
-      .get('quotationTable') as FormArray;
-  
-    // Push a new row into the quotationTable
-    quotationTable.push(this.fb.group({
-      feet: ['', Validators.required],
-      inch: ['', Validators.required],
-      rFeet: ['', Validators.required],
-      sqFt: ['', Validators.required],
-      weight: ['', Validators.required]
-    }));
-    this.selectedProduct = selectedProduct
-    this.isDialogOpen = true;
-  }  
+  onProductSelected(index: number, event: any) {
+    const selectedProduct = event.value;
+    if (selectedProduct) {
+      this.productIndex = index;
+      this.selectedProduct = this.products.find(p => p.id === selectedProduct)?.name || '';
+      this.isDialogOpen = true;
+      
+      // Clear existing table rows
+      const quotationTable = this.getQuotationTable();
+      while (quotationTable.length) {
+        quotationTable.removeAt(0);
+      }
+      
+      // Add initial row
+      this.addRow();
+    }
+  }
 
   addRowToQuotationTable(productIndex: number) {
     const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
@@ -255,7 +262,9 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   removeProduct(index: number) {
-    (this.quotationForm.get('quotationProducts') as FormArray).removeAt(index)
+    if (this.quotationProductFormArray.length > 1) {
+      this.quotationProductFormArray.removeAt(index);
+    }
   }
 
   removeItem(index: number) {
@@ -603,6 +612,11 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
         finalPrice: this.itemsFormArray.at(formValue.items.indexOf(item)).get('finalPrice')?.value
       }))
     };
+  }
+
+  isProductFieldInvalid(index: number, fieldName: string): boolean {
+    const control = this.quotationProductFormArray.at(index).get(fieldName);
+    return control ? control.invalid && (control.dirty || control.touched) : false;
   }
 
   // Add other utility methods as needed
