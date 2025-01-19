@@ -191,6 +191,10 @@
           id="purchaseAmount" 
           formControlName="purchaseAmount" 
           class="form-control"
+          [class.is-invalid]="isFieldInvalid('purchaseAmount')"
+          [value]="0"
+          min="0"
+          step="0.01"
         >
       </div>
 
@@ -203,6 +207,10 @@
           id="saleAmount" 
           formControlName="saleAmount" 
           class="form-control"
+          [class.is-invalid]="isFieldInvalid('saleAmount')"
+          [value]="0"
+          min="0"
+          step="0.01"
         >
       </div>
 
@@ -227,8 +235,9 @@
           formControlName="type" 
           class="form-control"
         >
-          <option value="NOS">NOS</option>
-          <option value="MM">MM</option>
+          <option *ngFor="let type of productTypes" [value]="type.value">
+            {{ type.label }}
+          </option>
         </select>
       </div>
 

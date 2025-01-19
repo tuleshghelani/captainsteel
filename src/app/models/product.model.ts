@@ -1,3 +1,9 @@
+export enum ProductMainType {
+  NOS = 'Nos',
+  REGULAR = 'Regular',
+  POLY_CARBONATE = 'Poly Carbonate',
+}
+
 export interface Product {
   id?: number;
   name: string;

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
-import { Product } from '../../models/product.model';
+import { Product, ProductMainType } from '../../models/product.model';
 import { Category } from '../../models/category.model';
 import { ToastrService } from 'ngx-toastr';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -55,6 +55,12 @@ export class ProductComponent implements OnInit {
   startIndex = 0;
   endIndex = 0;
   isDialogOpen = false;
+
+  productTypes = [
+    { value: 'NOS', label: ProductMainType.NOS },
+    { value: 'REGULAR', label: ProductMainType.REGULAR },
+    { value: 'POLY_CARBONATE', label: ProductMainType.POLY_CARBONATE }
+  ];
 
   constructor(
     private productService: ProductService,
@@ -145,7 +151,9 @@ export class ProductComponent implements OnInit {
           this.isDialogOpen = false;
           if(tempIsEditing) {
             this.closeDialog();
-          }
+          }          
+          this.productService.refreshProducts().subscribe({
+          });
         },
         error: (error) => {
           this.snackbarService.error(error.message || 'Operation failed');
@@ -192,7 +200,12 @@ export class ProductComponent implements OnInit {
   resetForm(): void {
     this.isEditing = false;
     this.editingId = undefined;
-    this.productForm.reset({ status: 'A' });
+    this.productForm.reset({ status: 'A',
+      purchaseAmount: 0,
+      saleAmount: 0,
+      weight: 0,
+      type: ProductMainType.NOS
+    });
   }
 
   onSearch(): void {
@@ -217,6 +230,7 @@ export class ProductComponent implements OnInit {
     this.editingId = undefined;
     this.productForm.reset({ status: 'A' });
     this.isDialogOpen = true;
+    this.initializeForms();
   }
 
   closeDialog(): void {
@@ -226,5 +240,10 @@ export class ProductComponent implements OnInit {
     this.isDialogOpen = false;
     this.resetForm();
     this.loadProducts();
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.productForm.get(fieldName);
+    return field ? field.invalid && (field.dirty || field.touched) : false;
   }
 }
