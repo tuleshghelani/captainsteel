@@ -82,7 +82,7 @@
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   width: 90%;
-  max-width: 800px;
+  max-width: 1020px;
   max-height: 90vh;
   overflow-y: auto;
   z-index: 1001;
@@ -118,3 +118,7 @@
     color: #dc3545;
   }
 } 
+
+.bottom-border {
+  border-top: 1px solid gray;
+}

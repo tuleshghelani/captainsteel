@@ -123,33 +123,6 @@
               </div>
             </div>
           </div>
-
-          <!-- <div class="quotation-product" formArrayName="quotationProducts">
-            <div class="products-header">
-              <h3><i class="fas fa-boxes"></i> Products </h3>
-              <button type="button" class="btn btn-primary" (click)="addProduct()">
-                <i class="fas fa-plus"></i> Add Product
-              </button>
-            </div>
-            <div class="quotation-row" *ngFor="let quotationProduct of quotationProductFormArray.controls; let i=index" [formGroupName]="i">
-              <div class="form-group">
-                <label>
-                  <i class="fa-solid fa-location-dot"></i> Select Product
-                </label>
-                <select 
-                  id="type" 
-                  formControlName="selectedProduct" 
-                  class="form-control"
-                  (change)="onProductSelected(i, $event)"
-                >
-                  <option *ngFor="let product of products" value="{{ product.name }}">{{ product.name }}</option>
-                </select>
-              </div>
-              <div class="product-delete-btn">
-                <button type="button" (click)="removeProduct(i)" class="btn btn-delete"><i class="fa-solid fa-trash"></i></button>
-              </div>
-            </div>
-          </div> -->
         </div>
       </div>
 
@@ -167,11 +140,8 @@
               <thead>
                 <tr>
                   <th>Product</th>
-                  <!-- Use itemsFormArray.at(0) to check the type for headers -->
-                  <!-- <ng-container *ngIf="itemsFormArray.at(0)?.get('productType')?.value === 'REGULAR'"> -->
-                    <th>Calculation Type</th>
-                    <th>Weight</th>
-                  <!-- </ng-container> -->
+                  <th>Calculation Type</th>
+                  <th>Weight</th>
                   <th>Quantity</th>
                   <th>Unit Price</th>
                   <th>Discount %</th>

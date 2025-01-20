@@ -14,11 +14,9 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { EncryptionService } from '../../../shared/services/encryption.service';
-import { DateUtils } from '../../../shared/utils/date-utils';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ProductMainType, ProductCalculationType } from '../../../models/product.model';
 import { ProductCalculationDialogComponent } from '../../../components/shared/product-calculation-dialog/product-calculation-dialog.component';
-// import { ProductMMCalculationDialogComponent } from '../../../components/shared/product-mm-calculation-dialog/product-mm-calculation-dialog.component';
 
 interface ProductOption {
   id: number;
@@ -65,7 +63,6 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   isLoading = false;
   isEdit = false;
   quotationId?: number;
-  isDialogOpen = false;
   selectedProduct!: string
   totals: { price: number; tax: number; finalPrice: number } = {
     price: 0,
@@ -77,10 +74,6 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     return this.quotationForm.get('items') as FormArray;
   }
 
-  get quotationProductFormArray(){
-    return this.quotationForm.get('quotationProducts') as FormArray;
-  }
-
   constructor(
     private fb: FormBuilder,
     private quotationService: QuotationService,
@@ -88,12 +81,11 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     private customerService: CustomerService,
     private snackbar: SnackbarService,
     private encryptionService: EncryptionService,
-    private dateUtils: DateUtils,
     private router: Router,
     private dialog: Dialog,
     private cdr: ChangeDetectorRef
   ) {
-      const today = new Date();
+    const today = new Date();
     this.minValidUntilDate = formatDate(today, 'yyyy-MM-dd', 'en');
     this.initForm();
   }
@@ -103,71 +95,11 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.loadCustomers();
     this.setupCustomerNameSync();
     this.checkForEdit();
-    this.addProduct()
-    // this.createQuotationTableFormGroup();
-    // Initially adding one row in table
-    // this.addRow();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  // get rows(): FormArray {
-  //   return this.quotationTableForm.get('quotationTable') as FormArray;
-  // }
-
-  addRow(): void {
-    const row = this.fb.group({
-      feet: ['', Validators.required],
-      inch: ['', Validators.required],
-      rFeet: ['', Validators.required],
-      sqFt: ['', Validators.required],
-      weight: ['', Validators.required]
-    });
-    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(this.productIndex).get('quotationTable') as FormArray;
-    quotationTable.push(row);  // Add the new row to the form array
-  }
-
-  // Get the quotationTable form array for the selected product
-  getQuotationTable(): FormArray | null {
-    try {
-      const quotationProducts = this.quotationForm.get('quotationProducts') as FormArray;
-      if (!quotationProducts || this.productIndex === undefined) return null;
-      
-      const product = quotationProducts.at(this.productIndex);
-      if (!product) return null;
-      
-      return product.get('quotationTable') as FormArray;
-    } catch (error) {
-      console.error('Error getting quotation table:', error);
-      return null;
-    }
-  }
-
-  deleteRow(index: number): void {
-    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(this.productIndex).get('quotationTable') as FormArray;
-    if (quotationTable.length > 1) {
-      quotationTable.removeAt(index);  // Remove the row at the specified index
-    }
-  }
-
-  // onProductSelected(event:Event,index:number){
-  //   const selectedProduct = (event.target as HTMLSelectElement).value;
-  //   const Products = this.quotationForm.get('quotationProducts') as FormArray
-  //   Products.at(index).get('selectedProduct')?.setValue(selectedProduct)
-  //   this.addRow()
-  //   console.log('selectedProduct >>>',selectedProduct, this.products)
-  //   console.log('quotationForm >>>',this.quotationForm.value)
-  //   this.selectedProduct = selectedProduct
-  //   this.isDialogOpen = true;
-  // }
-
-  closeDialog(){
-    this.isDialogOpen = false;
   }
 
   private initForm() {
@@ -184,8 +116,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       remarks: [''],
       termsConditions: [''],
       items: this.fb.array([]),
-      address: ['', Validators.required],
-      quotationProducts: this.fb.array([])
+      address: ['', Validators.required]
     });
 
     this.addItem();
@@ -206,13 +137,6 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       calculations: [[]]
     });
   }
-
-  // createQuotationTableFormGroup(): FormGroup {
-  //   return this.quotationTableForm = this.fb.group({
-  //     selectedProduct: ['',Validators.required],
-  //     quotationTable: this.fb.array([])  // An array to hold the rows
-  //   });
-  // }
 
   private setupCustomerNameSync() {
     this.quotationForm.get('customerId')?.valueChanges
@@ -246,48 +170,6 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.calculateTotalAmount();
   }
 
-  private createProductFormGroup(): FormGroup {
-    return this.fb.group({
-      selectedProduct: ['', Validators.required],
-      quotationTable: this.fb.array([])
-    });
-  }
-
-  addProduct() {
-    const productGroup = this.createProductFormGroup();
-    this.quotationProductFormArray.push(productGroup);
-  }
-
-  productIndex!: number
-
-  addRowToQuotationTable(productIndex: number) {
-    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(productIndex)
-      .get('quotationTable') as FormArray;
-  
-    quotationTable.push(this.fb.group({
-      feet: [0],
-      inch: [0],
-      rFeet: [0],
-      sqFt: [0],
-      weight: ['']
-    }));
-  }
-
-  deleteTableRow(productIndex: number, rowIndex: number) {
-    const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(productIndex)
-      .get('quotationTable') as FormArray;
-  
-    quotationTable.removeAt(rowIndex);
-  }
-
-  removeProduct(index: number) {
-    if (this.quotationProductFormArray.length > 1) {
-      this.quotationProductFormArray.removeAt(index);
-    }
-  }
-
   removeItem(index: number): void {
     this.itemsFormArray.removeAt(index);
     this.calculateTotalAmount();
@@ -295,7 +177,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
 
   private setupItemCalculations(group: FormGroup, index: number) {
     const fields = ['quantity', 'unitPrice', 'taxPercentage', 'discountPercentage'];
-    
+
     fields.forEach(field => {
       group.get(field)?.valueChanges
         .pipe(takeUntil(this.destroy$))
@@ -320,7 +202,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     const taxAmount = (afterDiscount * values.taxPercentage) / 100;
     const finalPrice = afterDiscount + taxAmount;
 
-    group.patchValue({ 
+    group.patchValue({
       price: Number(afterDiscount.toFixed(2)),
       finalPrice: Number(finalPrice.toFixed(2))
     }, { emitEvent: false });
@@ -411,7 +293,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       const price = group.get('price')?.value || 0;
       const finalPrice = group.get('finalPrice')?.value || 0;
       const taxPercentage = group.get('taxPercentage')?.value || 18;
-      
+
       totals.price += price;
       totals.tax += (price * taxPercentage) / 100;
       totals.finalPrice += finalPrice;
@@ -453,18 +335,18 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     if (!control) return false;
 
     const isInvalid = control.invalid && (control.dirty || control.touched);
-    
+
     if (isInvalid) {
       const errors = control.errors;
       if (errors) {
         if (errors['required']) return true;
         if (errors['min'] && fieldName === 'quantity') return true;
         if (errors['min'] && fieldName === 'unitPrice') return true;
-        if ((errors['min'] || errors['max']) && 
-            (fieldName === 'taxPercentage' || fieldName === 'discountPercentage')) return true;
+        if ((errors['min'] || errors['max']) &&
+          (fieldName === 'taxPercentage' || fieldName === 'discountPercentage')) return true;
       }
     }
-    
+
     return false;
   }
 
@@ -501,55 +383,39 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       productType: selectedProduct.type,
       unitPrice: selectedProduct.sale_amount || 0,
       weight: selectedProduct.weight || 0,
+      quantity: selectedProduct.quantity || 1,
       calculationType: ''
     });
 
     // Add or remove validators based on product type
     if (selectedProduct.type === 'REGULAR') {
       calculationTypeControl?.setValidators([Validators.required]);
-      itemGroup.get('quantity')?.disable();
+      // itemGroup.get('quantity')?.disable();
     } else {
       calculationTypeControl?.clearValidators();
       itemGroup.get('quantity')?.enable();
     }
-    
+
     calculationTypeControl?.updateValueAndValidity();
   }
 
   openCalculationDialog(index: number): void {
-    const itemGroup = this.itemsFormArray.at(index);
+    const itemGroup = this.itemsFormArray.at(index) as FormGroup;
     const selectedProduct = this.products.find(p => p.id === itemGroup.get('productId')?.value);
     const calculationType = itemGroup.get('calculationType')?.value;
-    
-    if (!selectedProduct || 
-        selectedProduct.type.toUpperCase() !== ProductMainType.REGULAR.toString().toUpperCase() ||
-        !calculationType) {
+
+    if (!selectedProduct ||
+      selectedProduct.type.toUpperCase() !== ProductMainType.REGULAR.toString().toUpperCase() ||
+      !calculationType) {
       return;
     }
 
     const savedCalculations = itemGroup.get('calculations')?.value || [];
-    
-    if (calculationType === ProductCalculationType.MM) {
-      // const dialogRef = this.dialog.open(ProductMMCalculationDialogComponent, {
-      //   data: { 
-      //     product: selectedProduct,
-      //     savedCalculations: savedCalculations
-      //   }
-      // });
 
-      // dialogRef.closed.subscribe((result?: any) => {
-      //   if (result) {
-      //     itemGroup.patchValue({
-      //       weight: result.totalWeight,
-      //       quantity: result.totalSqMM,
-      //       calculations: result.calculations
-      //     });
-      //     this.calculateItemPrice(index);
-      //   }
-      // });
+    if (calculationType === ProductCalculationType.MM) {
     } else if (calculationType === ProductCalculationType.SQ_FEET) {
       const dialogRef = this.dialog.open(ProductCalculationDialogComponent, {
-        data: { 
+        data: {
           product: selectedProduct,
           calculationType: calculationType,
           savedCalculations: savedCalculations
@@ -563,6 +429,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
             quantity: result.totalSqFeet,
             calculations: result.calculations
           });
+          itemGroup.updateValueAndValidity();
           this.calculateItemPrice(index);
         }
       });
@@ -578,50 +445,16 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     }
   }
 
-  // onSubmit() {
-  //   if (this.quotationForm.valid) {
-  //     this.loading = true;
-  //     const formData = this.prepareQuotationData();
-
-  //     this.quotationService.createQuotation(formData).subscribe({
-  //       next: (response) => {
-  //         if (response.success) {
-  //           this.snackbar.success(response.message);
-  //           this.resetForm();
-  //         }
-  //         this.loading = false;
-  //       },
-  //       error: (error) => {
-  //         this.snackbar.error(error?.error?.message || 'Failed to create quotation');
-  //         this.loading = false;
-  //       }
-  //     });
-  //   }
-  // }
-
-  private prepareQuotationData() {
-    const formValue = this.quotationForm.value;
-    return {
-      ...formValue,
-      quoteDate: formatDate(formValue.quoteDate, 'yyyy-MM-dd', 'en'),
-      validUntil: formatDate(formValue.validUntil, 'yyyy-MM-dd', 'en'),
-      items: formValue.items.map((item: any) => ({
-        ...item,
-        finalPrice: this.itemsFormArray.at(formValue.items.indexOf(item)).get('finalPrice')?.value
-      }))
-    };
-  }
-
   private checkForEdit(): void {
     const encryptedId = localStorage.getItem('editQuotationId');
-    
+
     if (!encryptedId) {
       return;
     }
 
     try {
       const quotationId = this.encryptionService.decrypt(encryptedId);
-      
+
       if (!quotationId) {
         localStorage.removeItem('editQuotationId');
         return;
@@ -652,12 +485,12 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
 
   private populateForm(data: any): void {
     if (!data) return;
-  
+
     // Clear existing items first
     while (this.itemsFormArray.length) {
       this.itemsFormArray.removeAt(0);
     }
-  
+
     // Patch basic form values
     this.quotationForm.patchValue({
       customerName: data.customerName,
@@ -667,7 +500,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       remarks: data.remarks || '',
       termsConditions: data.termsConditions || ''
     });
-  
+
     // Add items
     if (data.items && Array.isArray(data.items)) {
       data.items.forEach((item: any) => {
@@ -690,8 +523,8 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     if (this.quotationForm.valid) {
       this.isLoading = true;
       const formData = this.prepareFormData();
-      
-      const request$ = this.isEdit 
+
+      const request$ = this.isEdit
         ? this.quotationService.updateQuotation(this.quotationId!, formData)
         : this.quotationService.createQuotation(formData);
 
@@ -724,17 +557,12 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     };
   }
 
-  isProductFieldInvalid(index: number, fieldName: string): boolean {
-    const control = this.quotationProductFormArray.at(index).get(fieldName);
-    return control ? control.invalid && (control.dirty || control.touched) : false;
-  }
- 
   onCalculationTypeChange(index: number, event: Event): void {
     const select = event.target as HTMLSelectElement;
     const newCalculationType = select.value;
     const itemGroup = this.itemsFormArray.at(index);
     const currentCalculationType = itemGroup.get('calculationType')?.value;
-  
+
     // Only reset if calculation type actually changed
     if (currentCalculationType !== newCalculationType) {
       itemGroup.patchValue({
@@ -743,7 +571,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
         calculations: [] // Reset calculations when type changes
       });
     }
-  
+
     // Only open dialog if a type is selected
     if (newCalculationType) {
       this.openCalculationDialog(index);
