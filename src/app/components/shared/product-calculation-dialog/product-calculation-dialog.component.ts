@@ -64,7 +64,7 @@ export class ProductCalculationDialogComponent {
       weight: [{value: 0, disabled: true}]
     });
 
-    row.valueChanges.subscribe(() => this.calculateRow(this.calculationsArray.length - 1));
+    row.valueChanges.subscribe(() => this.calculateRow(this.calculationsArray.controls.indexOf(row)));
     this.calculationsArray.push(row);
   }
 
@@ -126,7 +126,7 @@ export class ProductCalculationDialogComponent {
         sqFeet: [{value: calc.sqFeet, disabled: true}],
         weight: [{value: calc.weight, disabled: true}]
       });
-      row.valueChanges.subscribe(() => this.calculateRow(this.calculationsArray.length - 1));
+      row.valueChanges.subscribe(() => this.calculateRow(this.calculationsArray.controls.indexOf(row)));
       this.calculationsArray.push(row);
     });
     this.calculateTotals();

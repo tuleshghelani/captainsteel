@@ -468,6 +468,8 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     
     const selectedProduct = this.products.find(p => p.id === event.value);
     console.log('Selected Product:', selectedProduct);
+
+    
     
     if (!selectedProduct) {
       console.warn('No product found for id:', event.value);
@@ -496,32 +498,54 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   openCalculationDialog(index: number): void {
     const itemGroup = this.itemsFormArray.at(index);
     const selectedProduct = this.products.find(p => p.id === itemGroup.get('productId')?.value);
+    const calculationType = itemGroup.get('calculationType')?.value;
     
-    if (!selectedProduct || selectedProduct.type.toUpperCase() !== ProductMainType.REGULAR.toString().toUpperCase()) {
+    if (!selectedProduct || 
+        selectedProduct.type.toUpperCase() !== ProductMainType.REGULAR.toString().toUpperCase() ||
+        !calculationType) {
       return;
     }
 
-    const calculationType = itemGroup.get('calculationType')?.value || 'SQ_FEET';
     const savedCalculations = itemGroup.get('calculations')?.value || [];
     
-    const dialogRef = this.dialog.open(ProductCalculationDialogComponent, {
-      data: { 
-        product: selectedProduct,
-        calculationType: calculationType,
-        savedCalculations: savedCalculations
-      }
-    });
+    if (calculationType === ProductCalculationType.MM) {
+      const dialogRef = this.dialog.open(ProductMMCalculationDialogComponent, {
+        data: { 
+          product: selectedProduct,
+          savedCalculations: savedCalculations
+        }
+      });
 
-    dialogRef.closed.subscribe((result?: any) => {
-      if (result) {
-        itemGroup.patchValue({
-          weight: result.totalWeight,
-          quantity: result.totalSqFeet,
-          calculations: result.calculations
-        });
-        this.calculateItemPrice(index);
-      }
-    });
+      dialogRef.closed.subscribe((result?: any) => {
+        if (result) {
+          itemGroup.patchValue({
+            weight: result.totalWeight,
+            quantity: result.totalSqMM,
+            calculations: result.calculations
+          });
+          this.calculateItemPrice(index);
+        }
+      });
+    } else if (calculationType === ProductCalculationType.SQ_FEET) {
+      const dialogRef = this.dialog.open(ProductCalculationDialogComponent, {
+        data: { 
+          product: selectedProduct,
+          calculationType: calculationType,
+          savedCalculations: savedCalculations
+        }
+      });
+
+      dialogRef.closed.subscribe((result?: any) => {
+        if (result) {
+          itemGroup.patchValue({
+            weight: result.totalWeight,
+            quantity: result.totalSqFeet,
+            calculations: result.calculations
+          });
+          this.calculateItemPrice(index);
+        }
+      });
+    }
   }
 
   validateDates(): void {

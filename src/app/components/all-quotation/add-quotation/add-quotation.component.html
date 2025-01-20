@@ -168,10 +168,10 @@
                 <tr>
                   <th>Product</th>
                   <!-- Use itemsFormArray.at(0) to check the type for headers -->
-                  <ng-container *ngIf="itemsFormArray.at(0)?.get('productType')?.value === 'REGULAR'">
+                  <!-- <ng-container *ngIf="itemsFormArray.at(0)?.get('productType')?.value === 'REGULAR'"> -->
                     <th>Calculation Type</th>
                     <th>Weight</th>
-                  </ng-container>
+                  <!-- </ng-container> -->
                   <th>Quantity</th>
                   <th>Unit Price</th>
                   <th>Discount %</th>
@@ -222,6 +222,10 @@
                     <td>
                       <input type="number" formControlName="weight" class="form-control" readonly>
                     </td>
+                  </ng-container>
+                  <ng-container *ngIf="itemsFormArray.at(i).get('productType')?.value != 'REGULAR'">
+                    <td></td>
+                    <td></td>
                   </ng-container>
 
                   <!-- Common fields -->
