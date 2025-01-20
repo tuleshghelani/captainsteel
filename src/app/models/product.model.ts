@@ -4,6 +4,11 @@ export enum ProductMainType {
   POLY_CARBONATE = 'Poly Carbonate',
 }
 
+export enum ProductCalculationType {
+  SQ_FEET = 'SQ_FEET',
+  MM = 'MM'
+}
+
 export interface Product {
   id?: number;
   name: string;
@@ -20,7 +25,8 @@ export interface Product {
   createdAt?: string;
   updatedAt?: string;
   weight: number;
-  type: string
+  type: ProductMainType;
+  calculationType?: ProductCalculationType;
 }
 
 export interface ProductSearchRequest {

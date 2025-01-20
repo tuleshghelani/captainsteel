@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, For
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { formatDate } from '@angular/common';
+import { Dialog, DialogRef } from '@angular/cdk/dialog';
 
 import { QuotationService } from '../../../services/quotation.service';
 import { ProductService } from '../../../services/product.service';
@@ -15,6 +16,9 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 import { EncryptionService } from '../../../shared/services/encryption.service';
 import { DateUtils } from '../../../shared/utils/date-utils';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { ProductMainType, ProductCalculationType } from '../../../models/product.model';
+import { ProductCalculationDialogComponent } from '../../../components/shared/product-calculation-dialog/product-calculation-dialog.component';
+import { ProductMMCalculationDialogComponent } from '../../../components/shared/product-mm-calculation-dialog/product-mm-calculation-dialog.component';
 
 interface ProductOption {
   id: number;
@@ -80,7 +84,8 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     private snackbar: SnackbarService,
     private encryptionService: EncryptionService,
     private dateUtils: DateUtils,
-    private router: Router
+    private router: Router,
+    private dialog: Dialog
   ) {
       const today = new Date();
     this.minValidUntilDate = formatDate(today, 'yyyy-MM-dd', 'en');
@@ -121,9 +126,19 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   // Get the quotationTable form array for the selected product
-  getQuotationTable(): FormArray {
-    return (this.quotationForm.get('quotationProducts') as FormArray)
-      .at(this.productIndex).get('quotationTable') as FormArray;
+  getQuotationTable(): FormArray | null {
+    try {
+      const quotationProducts = this.quotationForm.get('quotationProducts') as FormArray;
+      if (!quotationProducts || this.productIndex === undefined) return null;
+      
+      const product = quotationProducts.at(this.productIndex);
+      if (!product) return null;
+      
+      return product.get('quotationTable') as FormArray;
+    } catch (error) {
+      console.error('Error getting quotation table:', error);
+      return null;
+    }
   }
 
   deleteRow(index: number): void {
@@ -170,14 +185,17 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.addItem();
   }
 
-  private createItemFormGroup(item?: any): FormGroup {
+  private createItemFormGroup(initialData?: any): FormGroup {
     return this.fb.group({
-      productId: [item?.productId || '', Validators.required],
-      quantity: [item?.quantity || 1, [Validators.required, Validators.min(1)]],
-      unitPrice: [item?.unitPrice || '', [Validators.required, Validators.min(0.01)]],
-      taxPercentage: [item?.taxPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
-      discountPercentage: [18, [Validators.required, Validators.min(0), Validators.max(100)]],
-      finalPrice: [{ value: item?.finalPrice || 0, disabled: true }]
+      productId: [initialData?.productId || '', Validators.required],
+      productType: [initialData?.productType || ''],
+      calculationType: [initialData?.calculationType || 'SQ_FEET'],
+      quantity: [initialData?.quantity || 1, [Validators.required, Validators.min(1)]],
+      weight: [{ value: initialData?.weight || 0, disabled: true }],
+      unitPrice: [initialData?.unitPrice || 0, [Validators.required, Validators.min(0.01)]],
+      discountPercentage: [initialData?.discountPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      taxPercentage: [{ value: 18, disabled: true }],
+      finalPrice: [{ value: initialData?.finalPrice || 0, disabled: true }]
     });
   }
 
@@ -220,24 +238,6 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   productIndex!: number
-
-  onProductSelected(index: number, event: any) {
-    const selectedProduct = event.value;
-    if (selectedProduct) {
-      this.productIndex = index;
-      this.selectedProduct = this.products.find(p => p.id === selectedProduct)?.name || '';
-      this.isDialogOpen = true;
-      
-      // Clear existing table rows
-      const quotationTable = this.getQuotationTable();
-      while (quotationTable.length) {
-        quotationTable.removeAt(0);
-      }
-      
-      // Add initial row
-      this.addRow();
-    }
-  }
 
   addRowToQuotationTable(productIndex: number) {
     const quotationTable = (this.quotationForm.get('quotationProducts') as FormArray)
@@ -286,34 +286,25 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     });
   }
 
-  private calculateItemPrice(index: number) {
+  private calculateItemPrice(index: number): void {
     const group = this.itemsFormArray.at(index) as FormGroup;
     const values = {
       quantity: group.get('quantity')?.value || 0,
       unitPrice: group.get('unitPrice')?.value || 0,
-      discountPercentage: 18,
-      taxPercentage: group.get('taxPercentage')?.value || 0
+      discountPercentage: group.get('discountPercentage')?.value || 0,
+      taxPercentage: 18 // Fixed 18%
     };
 
-    // Calculate base price
     const basePrice = values.quantity * values.unitPrice;
-
-    // Calculate discount amount
     const discountAmount = (basePrice * values.discountPercentage) / 100;
     const afterDiscount = basePrice - discountAmount;
-
-    // Calculate tax on discounted amount
     const taxAmount = (afterDiscount * values.taxPercentage) / 100;
-    
-    // Final price is discounted amount plus tax
     const finalPrice = afterDiscount + taxAmount;
 
-    // Update the form control
     group.patchValue({ 
       finalPrice: Number(finalPrice.toFixed(2))
     }, { emitEvent: false });
 
-    // Update total amount
     this.calculateTotalAmount();
   }
 
@@ -460,16 +451,78 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     });
   }
 
-  onProductSelect(index: number): void {
-    const productId = this.itemsFormArray.at(index).get('productId')?.value;
-    if (productId) {
-      const selectedProduct = this.products.find(p => p.id === productId);
-      if (selectedProduct) {
-        this.itemsFormArray.at(index).patchValue({
-          unitPrice: selectedProduct.sale_amount,
-          taxPercentage: selectedProduct.tax_percentage || 0
-        }, { emitEvent: true });
-      }
+  onProductSelect(index: number, event: any): void {
+    console.log('Product Select Event:', event);
+    console.log('Index:', index);
+    
+    const selectedProduct = this.products.find(p => p.id === event.value);
+    console.log('Selected Product:', selectedProduct);
+    
+    if (!selectedProduct) {
+      console.warn('No product found for id:', event.value);
+      return;
+    }
+
+    const itemGroup = this.itemsFormArray.at(index);
+    itemGroup.patchValue({
+      productId: selectedProduct.id,
+      productType: selectedProduct.type,
+      unitPrice: selectedProduct.sale_amount || 0,
+      weight: selectedProduct.weight || 0,
+      calculationType: ''
+    });
+
+    if (selectedProduct.type === 'REGULAR') {
+      itemGroup.get('quantity')?.disable();
+      this.openCalculationDialog(index);
+    } else {
+      itemGroup.get('quantity')?.enable();
+    }
+
+    this.calculateItemPrice(index);
+  }
+
+  openCalculationDialog(index: number): void {
+    const itemGroup = this.itemsFormArray.at(index);
+    const selectedProduct = this.products.find(p => p.id === itemGroup.get('productId')?.value);
+    
+    if (!selectedProduct || selectedProduct.type.toUpperCase() !== ProductMainType.REGULAR.toString().toUpperCase()) {
+      return;
+    }
+
+    const calculationType = itemGroup.get('calculationType')?.value || 'SQ_FEET';
+    
+    if (calculationType === ProductCalculationType.MM) {
+      const dialogRef = this.dialog.open(ProductMMCalculationDialogComponent, {
+        data: { product: selectedProduct }
+      });
+
+      dialogRef.closed.subscribe((result?: any) => {
+        if (result) {
+          itemGroup.patchValue({
+            weight: result.totalWeight,
+            quantity: result.totalSqMM
+          });
+          this.calculateItemPrice(index);
+        }
+      });
+    } else {
+      const dialogRef = this.dialog.open(ProductCalculationDialogComponent, {
+        data: { 
+          product: selectedProduct,
+          calculationType: calculationType
+        }
+      });
+
+      dialogRef.closed.subscribe((result?: any) => {
+        if (result) {
+          itemGroup.patchValue({
+            weight: result.totalWeight,
+            quantity: result.totalSqFeet
+          });
+          this.calculateItemPrice(index);
+        }
+      });
     }
   }
 
@@ -517,19 +570,29 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   private checkForEdit(): void {
-    const quotationId = this.encryptionService.decrypt(localStorage.getItem('editQuotationId') || '');
-    if (quotationId) {
+    const encryptedId = localStorage.getItem('editQuotationId');
+    
+    if (!encryptedId) {
+      return;
+    }
+
+    try {
+      const quotationId = this.encryptionService.decrypt(encryptedId);
+      
+      if (!quotationId) {
+        localStorage.removeItem('editQuotationId');
+        return;
+      }
+
       this.isLoading = true;
       this.quotationService.getQuotationDetail(parseInt(quotationId)).subscribe({
         next: (response) => {
-          console.log('Quotation response:', response);
           if (response) {
             this.quotationId = parseInt(quotationId);
             this.isEdit = true;
             this.populateForm(response.data);
           }
           this.isLoading = false;
-          // localStorage.removeItem('editQuotationId');
         },
         error: (error) => {
           console.error('Error loading quotation details:', error);
@@ -538,6 +601,9 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
           localStorage.removeItem('editQuotationId');
         }
       });
+    } catch (error) {
+      console.error('Decryption error:', error);
+      localStorage.removeItem('editQuotationId');
     }
   }
 
@@ -618,6 +684,33 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     const control = this.quotationProductFormArray.at(index).get(fieldName);
     return control ? control.invalid && (control.dirty || control.touched) : false;
   }
+ 
+  onCalculationTypeChange(index: number, event: any): void {
+    console.log('event >>>', event);
+    const itemGroup = this.itemsFormArray.at(index);
+    const calculationType = event.target.value;
+    const selectedProduct = this.products.find(p => p.id === itemGroup.get('productId')?.value);
+    
+    console.log('selectedProduct >>>', selectedProduct);
+    console.log('calculationType >>>', calculationType);
+    console.log('selectedProduct.type >>>', selectedProduct?.type);
+    console.log('ProductMainType.REGULAR >>>', ProductMainType.REGULAR);
+    
+    if (!selectedProduct || selectedProduct.type.toUpperCase() != ProductMainType.REGULAR.toString().toUpperCase()) {
+      console.log('Condition failed - returning');
+      return;
+    }
 
-  // Add other utility methods as needed
+    console.log('itemGroup >>>', itemGroup);
+    
+    // Reset values when calculation type changes
+    itemGroup.patchValue({
+      weight: 0,
+      quantity: 0
+    });
+
+    // Open the appropriate calculation dialog
+    this.openCalculationDialog(index);
+  }
+
 }

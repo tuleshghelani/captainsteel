@@ -167,6 +167,11 @@
               <thead>
                 <tr>
                   <th>Product</th>
+                  <!-- Use itemsFormArray.at(0) to check the type for headers -->
+                  <ng-container *ngIf="itemsFormArray.at(0)?.get('productType')?.value === 'REGULAR'">
+                    <th>Calculation Type</th>
+                    <th>Weight</th>
+                  </ng-container>
                   <th>Quantity</th>
                   <th>Unit Price</th>
                   <th>Discount %</th>
@@ -179,28 +184,47 @@
                 <tr *ngFor="let item of itemsFormArray.controls; let i=index" [formGroupName]="i">
                   <!-- Product Selection -->
                   <td>
-                    <div class="select-group">
+                    <div class="form-field-container">
                       <app-searchable-select
-                        formControlName="productId"
+                        [formControlName]="'productId'"
                         [options]="products"
-                        labelKey="name"
-                        valueKey="id"
+                        [labelKey]="'name'"
+                        [valueKey]="'id'"
                         [placeholder]="'Select Product'"
+                        [searchPlaceholder]="'Search products...'"
                         [class.is-invalid]="isItemFieldInvalid(i, 'productId')"
+                        (selectionChange)="onProductSelect(i, $event)"
                       ></app-searchable-select>
-                      <button 
-                        type="button" 
-                        class="btn-icon refresh" 
-                        (click)="refreshProducts()" 
-                        [disabled]="isLoadingProducts"
-                        title="Refresh Products"
+                      <button *ngIf="itemsFormArray.at(i).get('productType')?.value === 'REGULAR'"
+                        type="button"
+                        class="btn-icon calculate"
+                        (click)="openCalculationDialog(i)"
+                        title="Open Calculator"
                       >
-                        <i class="fas" [ngClass]="isLoadingProducts ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
+                        <i class="fas fa-calculator"></i>
                       </button>
                     </div>
                   </td>
 
-                  <!-- Quantity -->
+                  <!-- Regular Product specific fields -->
+                  <ng-container *ngIf="itemsFormArray.at(i).get('productType')?.value == 'REGULAR'">
+                    <td>
+                      <select 
+                        [formControlName]="'calculationType'"
+                        class="form-control"
+                        (change)="onCalculationTypeChange(i, $event)"
+                      > 
+                        <option value="" disabled selected>Select Calculation Type</option>
+                        <option value="SQ_FEET">Sq. Feet</option>
+                        <option value="MM">MM</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input type="number" formControlName="weight" class="form-control" readonly>
+                    </td>
+                  </ng-container>
+
+                  <!-- Common fields -->
                   <td>
                     <input 
                       type="number" 
@@ -208,10 +232,9 @@
                       class="form-control"
                       [class.is-invalid]="isItemFieldInvalid(i, 'quantity')"
                       min="1"
+                      [readonly]="itemsFormArray.at(i).get('productType')?.value === 'REGULAR'"
                     >
                   </td>
-
-                  <!-- Unit Price -->
                   <td>
                     <div class="input-group">
                       <span class="input-group-text">₹</span>
@@ -225,15 +248,12 @@
                       >
                     </div>
                   </td>
-
-                  <!-- Discount % -->
                   <td>
                     <div class="input-group">
                       <input 
                         type="number" 
                         formControlName="discountPercentage" 
                         class="form-control"
-                        readonly="true"
                         [class.is-invalid]="isItemFieldInvalid(i, 'discountPercentage')"
                         min="0"
                         max="100"
@@ -242,24 +262,18 @@
                       <span class="input-group-text">%</span>
                     </div>
                   </td>
-
-                  <!-- Tax % -->
                   <td>
                     <div class="input-group">
                       <input 
                         type="number" 
                         formControlName="taxPercentage" 
                         class="form-control"
-                        [class.is-invalid]="isItemFieldInvalid(i, 'taxPercentage')"
-                        min="0"
-                        max="100"
-                        step="0.01"
+                        value="18"
+                        readonly
                       >
                       <span class="input-group-text">%</span>
                     </div>
                   </td>
-
-                  <!-- Final Price -->
                   <td>
                     <div class="input-group">
                       <span class="input-group-text">₹</span>
@@ -271,16 +285,9 @@
                       >
                     </div>
                   </td>
-
-                  <!-- Actions -->
                   <td>
-                    <button 
-                      type="button" 
-                      class="btn-icon remove-product" 
-                      (click)="removeItem(i)"
-                      [disabled]="itemsFormArray.length === 1"
-                    >
-                      <i class="fas fa-trash"></i>
+                    <button type="button" (click)="removeItem(i)" class="btn btn-delete">
+                      <i class="fa-solid fa-trash"></i>
                     </button>
                   </td>
                 </tr>
@@ -351,48 +358,6 @@
       </div>
     </form>
   </div>
-</div>
-
-<!-- Product Dialog -->
-<div class="dialog-backdrop" *ngIf="isDialogOpen" (click)="closeDialog()"></div>
-<div class="dialog" *ngIf="isDialogOpen" [@dialogAnimation]>
-  <div class="dialog-header">
-    <p style="margin-bottom: 0px;"><b>Product : </b>{{ selectedProduct }}</p>
-    <button class="close-button" (click)="closeDialog()" title="Close">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-  <div class="table-container">
-    <form [formGroup]="quotationForm">
-      <table class="custom-table">
-        <thead>
-          <tr>
-            <th>Feet</th>
-            <th>Inch</th>
-            <th>R.Feet</th>
-            <th>Sq/Ft</th>
-            <th>Weight</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody formArrayName="quotationProducts">
-          <tr *ngFor="let row of getQuotationTable().controls; let i = index" [formGroupName]="i">
-            <td><input formControlName="feet" type="number" class="form-input" /></td>
-            <td><input formControlName="inch" type="number" class="form-input" /></td>
-            <td><input formControlName="rFeet" type="number" class="form-input" /></td>
-            <td><input formControlName="sqFt" type="number" class="form-input" /></td>
-            <td><input formControlName="weight" type="text" class="form-input" /></td>
-            <td>
-              <button type="button" (click)="deleteRow(i)" class="btn btn-delete"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-  
-      <button type="button" (click)="addRow()" class="btn btn-add"><i class="fa-solid fa-plus"></i> Add Row</button>
-      <!-- <button type="submit" class="btn btn-submit">Submit</button> -->
-    </form>
-  </div>  
 </div>
 
 <app-loader *ngIf="loading"></app-loader>

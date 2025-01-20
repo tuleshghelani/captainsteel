@@ -27,6 +27,7 @@ export class SearchableSelectComponent implements ControlValueAccessor {
   @Input() defaultOption: { label: string; value: any } | null = null;
   @Input() searchPlaceholder: string = 'Search...';
   @Input() multiple = false;
+  @Output() selectionChange = new EventEmitter<any>();
 
   searchText: string = '';
   isOpen: boolean = false;
@@ -133,6 +134,7 @@ export class SearchableSelectComponent implements ControlValueAccessor {
       this.isOpen = false;
     }
     this.onTouch();
+    this.selectionChange.emit({ value: this.selectedValue });
   }
 
   isSelected(option: any): boolean {
