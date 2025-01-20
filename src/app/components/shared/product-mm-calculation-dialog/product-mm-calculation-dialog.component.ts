@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Product } from '../../../models/product.model';
 import { ProductCalculationService } from '../../../services/product-calculation.service';
+import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
 
 @Component({
   selector: 'app-product-mm-calculation-dialog',
@@ -12,10 +13,8 @@ import { ProductCalculationService } from '../../../services/product-calculation
   imports: [CommonModule, ReactiveFormsModule]
 })
 export class ProductMMCalculationDialogComponent {
-  @Input() product!: Product;
-  @Output() close = new EventEmitter<void>();
-  @Output() save = new EventEmitter<any>();
-
+  product: Product;
+  
   calculationForm!: FormGroup;
   totals = {
     totalLength: 0,
@@ -28,9 +27,18 @@ export class ProductMMCalculationDialogComponent {
 
   constructor(
     private fb: FormBuilder,
-    private calculationService: ProductCalculationService
+    private calculationService: ProductCalculationService,
+    private dialogRef: DialogRef<any>,
+    @Inject(DIALOG_DATA) public data: { 
+      product: Product;
+      savedCalculations: any[];
+    }
   ) {
+    this.product = data.product;
     this.initForm();
+    if (data.savedCalculations?.length) {
+      this.loadSavedCalculations();
+    }
   }
 
   private initForm(): void {
@@ -111,10 +119,20 @@ export class ProductMMCalculationDialogComponent {
 
   onSave(): void {
     if (this.calculationForm.valid) {
-      this.save.emit({
+      const result = {
         ...this.totals,
-        calculations: this.calculationForm.value.calculations
-      });
+        calculations: this.calculationsArray.controls.map(control => ({
+          ...control.value,
+          sqMM: control.get('sqMM')?.value,
+          sqFeet: control.get('sqFeet')?.value,
+          weight: control.get('weight')?.value
+        }))
+      };
+      this.dialogRef.close(result);
     }
+  }
+
+  closeDialog(): void {
+    this.dialogRef.close();
   }
 } 

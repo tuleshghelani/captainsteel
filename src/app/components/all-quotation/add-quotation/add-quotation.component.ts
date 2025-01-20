@@ -18,7 +18,7 @@ import { DateUtils } from '../../../shared/utils/date-utils';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ProductMainType, ProductCalculationType } from '../../../models/product.model';
 import { ProductCalculationDialogComponent } from '../../../components/shared/product-calculation-dialog/product-calculation-dialog.component';
-import { ProductMMCalculationDialogComponent } from '../../../components/shared/product-mm-calculation-dialog/product-mm-calculation-dialog.component';
+// import { ProductMMCalculationDialogComponent } from '../../../components/shared/product-mm-calculation-dialog/product-mm-calculation-dialog.component';
 
 interface ProductOption {
   id: number;
@@ -303,9 +303,10 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       quantity: group.get('quantity')?.value || 0,
       unitPrice: group.get('unitPrice')?.value || 0,
       discountPercentage: group.get('discountPercentage')?.value || 0,
-      taxPercentage: 18 // Fixed 18%
+      taxPercentage: group.get('taxPercentage')?.value || 18
     };
 
+    // Base calculation for all product types
     const basePrice = values.quantity * values.unitPrice;
     const discountAmount = (basePrice * values.discountPercentage) / 100;
     const afterDiscount = basePrice - discountAmount;
@@ -509,23 +510,23 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     const savedCalculations = itemGroup.get('calculations')?.value || [];
     
     if (calculationType === ProductCalculationType.MM) {
-      const dialogRef = this.dialog.open(ProductMMCalculationDialogComponent, {
-        data: { 
-          product: selectedProduct,
-          savedCalculations: savedCalculations
-        }
-      });
+      // const dialogRef = this.dialog.open(ProductMMCalculationDialogComponent, {
+      //   data: { 
+      //     product: selectedProduct,
+      //     savedCalculations: savedCalculations
+      //   }
+      // });
 
-      dialogRef.closed.subscribe((result?: any) => {
-        if (result) {
-          itemGroup.patchValue({
-            weight: result.totalWeight,
-            quantity: result.totalSqMM,
-            calculations: result.calculations
-          });
-          this.calculateItemPrice(index);
-        }
-      });
+      // dialogRef.closed.subscribe((result?: any) => {
+      //   if (result) {
+      //     itemGroup.patchValue({
+      //       weight: result.totalWeight,
+      //       quantity: result.totalSqMM,
+      //       calculations: result.calculations
+      //     });
+      //     this.calculateItemPrice(index);
+      //   }
+      // });
     } else if (calculationType === ProductCalculationType.SQ_FEET) {
       const dialogRef = this.dialog.open(ProductCalculationDialogComponent, {
         data: { 
@@ -707,32 +708,25 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     return control ? control.invalid && (control.dirty || control.touched) : false;
   }
  
-  onCalculationTypeChange(index: number, event: any): void {
-    console.log('event >>>', event);
+  onCalculationTypeChange(index: number, event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const newCalculationType = select.value;
     const itemGroup = this.itemsFormArray.at(index);
-    const calculationType = event.target.value;
-    const selectedProduct = this.products.find(p => p.id === itemGroup.get('productId')?.value);
-    
-    console.log('selectedProduct >>>', selectedProduct);
-    console.log('calculationType >>>', calculationType);
-    console.log('selectedProduct.type >>>', selectedProduct?.type);
-    console.log('ProductMainType.REGULAR >>>', ProductMainType.REGULAR);
-    
-    if (!selectedProduct || selectedProduct.type.toUpperCase() != ProductMainType.REGULAR.toString().toUpperCase()) {
-      console.log('Condition failed - returning');
-      return;
+    const currentCalculationType = itemGroup.get('calculationType')?.value;
+  
+    // Only reset if calculation type actually changed
+    if (currentCalculationType !== newCalculationType) {
+      itemGroup.patchValue({
+        weight: 0,
+        quantity: 0,
+        calculations: [] // Reset calculations when type changes
+      });
     }
-
-    console.log('itemGroup >>>', itemGroup);
-    
-    // Reset values when calculation type changes
-    itemGroup.patchValue({
-      weight: 0,
-      quantity: 0
-    });
-
-    // Open the appropriate calculation dialog
-    this.openCalculationDialog(index);
+  
+    // Only open dialog if a type is selected
+    if (newCalculationType) {
+      this.openCalculationDialog(index);
+    }
   }
 
 }
