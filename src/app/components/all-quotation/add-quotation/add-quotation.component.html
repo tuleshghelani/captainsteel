@@ -175,6 +175,7 @@
                   <th>Quantity</th>
                   <th>Unit Price</th>
                   <th>Discount %</th>
+                  <th>Price</th>
                   <th>Tax %</th>
                   <th>Final Price</th>
                   <th>Actions</th>
@@ -268,6 +269,17 @@
                   </td>
                   <td>
                     <div class="input-group">
+                      <span class="input-group-text">₹</span>
+                      <input 
+                        type="number" 
+                        formControlName="price" 
+                        class="form-control"
+                        readonly
+                      >
+                    </div>
+                  </td>
+                  <td>
+                    <div class="input-group">
                       <input 
                         type="number" 
                         formControlName="taxPercentage" 
@@ -296,6 +308,45 @@
                   </td>
                 </tr>
               </tbody>
+              <tfoot>
+                <tr class="totals-row">
+                  <td colspan="6" class="text-end"><strong>Totals:</strong></td>
+                  <td>
+                    <div class="input-group">
+                      <span class="input-group-text">₹</span>
+                      <input 
+                        type="number" 
+                        [value]="getTotalPrice() | number:'1.2-2'"
+                        class="form-control"
+                        readonly
+                      >
+                    </div>
+                  </td>
+                  <td>
+                    <div class="input-group">
+                      <span class="input-group-text">₹</span>
+                      <input 
+                        type="number" 
+                        [value]="getTotalTax() | number:'1.2-2'"
+                        class="form-control"
+                        readonly
+                      >
+                    </div>
+                  </td>
+                  <td>
+                    <div class="input-group">
+                      <span class="input-group-text">₹</span>
+                      <input 
+                        type="number" 
+                        [value]="getTotalFinalPrice() | number:'1.2-2'"
+                        class="form-control"
+                        readonly
+                      >
+                    </div>
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </div>

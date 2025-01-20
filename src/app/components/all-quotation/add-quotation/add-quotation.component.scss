@@ -567,4 +567,18 @@
     }
   }
 }
+
+.totals-row {
+  background-color: #f8f9fa;
+  font-weight: bold;
   
+  td {
+    border-top: 2px solid #dee2e6;
+  }
+  
+  .input-group {
+    input {
+      background-color: #fff;
+    }
+  }
+}

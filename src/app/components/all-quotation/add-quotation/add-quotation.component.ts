@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -85,7 +85,8 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     private encryptionService: EncryptionService,
     private dateUtils: DateUtils,
     private router: Router,
-    private dialog: Dialog
+    private dialog: Dialog,
+    private cdr: ChangeDetectorRef
   ) {
       const today = new Date();
     this.minValidUntilDate = formatDate(today, 'yyyy-MM-dd', 'en');
@@ -189,14 +190,15 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     return this.fb.group({
       productId: [initialData?.productId || '', Validators.required],
       productType: [initialData?.productType || ''],
-      calculationType: [initialData?.calculationType || 'SQ_FEET'],
+      calculationType: [initialData?.calculationType || ''],
       quantity: [initialData?.quantity || 1, [Validators.required, Validators.min(1)]],
       weight: [{ value: initialData?.weight || 0, disabled: true }],
       unitPrice: [initialData?.unitPrice || 0, [Validators.required, Validators.min(0.01)]],
       discountPercentage: [initialData?.discountPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      price: [initialData?.price || 0, [Validators.required, Validators.min(0.01)]],
       taxPercentage: [{ value: 18, disabled: true }],
       finalPrice: [{ value: initialData?.finalPrice || 0, disabled: true }],
-      calculations: [[]]  // Add this to store calculations
+      calculations: [[]]
     });
   }
 
@@ -229,10 +231,12 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       quantity: [1, [Validators.required, Validators.min(1)]],
       unitPrice: [0, [Validators.required, Validators.min(0.01)]],
       discountPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      price: [{ value: 0, disabled: true }],
       taxPercentage: [{ value: 18, disabled: true }],
       finalPrice: [{ value: 0, disabled: true }],
-      calculations: [[]]  // Add this to store calculations
+      calculations: [[]]
     });
+    this.setupItemCalculations(itemGroup, this.itemsFormArray.length);
     this.itemsFormArray.push(itemGroup);
   }
 
@@ -306,7 +310,6 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       taxPercentage: group.get('taxPercentage')?.value || 18
     };
 
-    // Base calculation for all product types
     const basePrice = values.quantity * values.unitPrice;
     const discountAmount = (basePrice * values.discountPercentage) / 100;
     const afterDiscount = basePrice - discountAmount;
@@ -314,10 +317,12 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     const finalPrice = afterDiscount + taxAmount;
 
     group.patchValue({ 
+      price: Number(afterDiscount.toFixed(2)),
       finalPrice: Number(finalPrice.toFixed(2))
     }, { emitEvent: false });
 
-    this.calculateTotalAmount();
+    // Trigger change detection
+    this.cdr.detectChanges();
   }
 
   getTotalAmount(): number {
@@ -464,20 +469,12 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   onProductSelect(index: number, event: any): void {
-    console.log('Product Select Event:', event);
-    console.log('Index:', index);
-    
     const selectedProduct = this.products.find(p => p.id === event.value);
-    console.log('Selected Product:', selectedProduct);
-
-    
-    
-    if (!selectedProduct) {
-      console.warn('No product found for id:', event.value);
-      return;
-    }
+    if (!selectedProduct) return;
 
     const itemGroup = this.itemsFormArray.at(index);
+    const calculationTypeControl = itemGroup.get('calculationType');
+
     itemGroup.patchValue({
       productId: selectedProduct.id,
       productType: selectedProduct.type,
@@ -486,14 +483,16 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       calculationType: ''
     });
 
+    // Add or remove validators based on product type
     if (selectedProduct.type === 'REGULAR') {
+      calculationTypeControl?.setValidators([Validators.required]);
       itemGroup.get('quantity')?.disable();
-      this.openCalculationDialog(index);
     } else {
+      calculationTypeControl?.clearValidators();
       itemGroup.get('quantity')?.enable();
     }
-
-    this.calculateItemPrice(index);
+    
+    calculationTypeControl?.updateValueAndValidity();
   }
 
   openCalculationDialog(index: number): void {
@@ -656,6 +655,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           taxPercentage: item.taxPercentage,
+          price: item.price,
           discountPercentage: item.discountPercentage,
           finalPrice: item.finalPrice
         });
@@ -727,6 +727,25 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     if (newCalculationType) {
       this.openCalculationDialog(index);
     }
+  }
+
+  getTotalPrice(): number {
+    return this.itemsFormArray.controls
+      .reduce((total, group) => total + (group.get('price')?.value || 0), 0);
+  }
+
+  getTotalTax(): number {
+    return this.itemsFormArray.controls
+      .reduce((total, group) => {
+        const price = group.get('price')?.value || 0;
+        const taxPercentage = group.get('taxPercentage')?.value || 18;
+        return total + ((price * taxPercentage) / 100);
+      }, 0);
+  }
+
+  getTotalFinalPrice(): number {
+    return this.itemsFormArray.controls
+      .reduce((total, group) => total + (group.get('finalPrice')?.value || 0), 0);
   }
 
 }
