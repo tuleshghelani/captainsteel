@@ -221,6 +221,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.productService.getProducts({ status: 'A' }).subscribe({
       next: (response) => {
         if (response.success) {
+          console.log('All products >>>',response.data)
           this.products = response.data;
         }
         this.isLoadingProducts = false;
