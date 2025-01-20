@@ -195,7 +195,8 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       unitPrice: [initialData?.unitPrice || 0, [Validators.required, Validators.min(0.01)]],
       discountPercentage: [initialData?.discountPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
       taxPercentage: [{ value: 18, disabled: true }],
-      finalPrice: [{ value: initialData?.finalPrice || 0, disabled: true }]
+      finalPrice: [{ value: initialData?.finalPrice || 0, disabled: true }],
+      calculations: [[]]  // Add this to store calculations
     });
   }
 
@@ -219,9 +220,19 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       });
   }
 
-  addItem() {
-    const itemGroup = this.createItemFormGroup();
-    this.setupItemCalculations(itemGroup, this.itemsFormArray.length);
+  addItem(): void {
+    const itemGroup = this.fb.group({
+      productId: ['', Validators.required],
+      productType: [''],
+      calculationType: [''],
+      weight: [0],
+      quantity: [1, [Validators.required, Validators.min(1)]],
+      unitPrice: [0, [Validators.required, Validators.min(0.01)]],
+      discountPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      taxPercentage: [{ value: 18, disabled: true }],
+      finalPrice: [{ value: 0, disabled: true }],
+      calculations: [[]]  // Add this to store calculations
+    });
     this.itemsFormArray.push(itemGroup);
   }
 
@@ -491,39 +502,26 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     }
 
     const calculationType = itemGroup.get('calculationType')?.value || 'SQ_FEET';
+    const savedCalculations = itemGroup.get('calculations')?.value || [];
     
-    if (calculationType === ProductCalculationType.MM) {
-      const dialogRef = this.dialog.open(ProductMMCalculationDialogComponent, {
-        data: { product: selectedProduct }
-      });
+    const dialogRef = this.dialog.open(ProductCalculationDialogComponent, {
+      data: { 
+        product: selectedProduct,
+        calculationType: calculationType,
+        savedCalculations: savedCalculations
+      }
+    });
 
-      dialogRef.closed.subscribe((result?: any) => {
-        if (result) {
-          itemGroup.patchValue({
-            weight: result.totalWeight,
-            quantity: result.totalSqMM
-          });
-          this.calculateItemPrice(index);
-        }
-      });
-    } else {
-      const dialogRef = this.dialog.open(ProductCalculationDialogComponent, {
-        data: { 
-          product: selectedProduct,
-          calculationType: calculationType
-        }
-      });
-
-      dialogRef.closed.subscribe((result?: any) => {
-        if (result) {
-          itemGroup.patchValue({
-            weight: result.totalWeight,
-            quantity: result.totalSqFeet
-          });
-          this.calculateItemPrice(index);
-        }
-      });
-    }
+    dialogRef.closed.subscribe((result?: any) => {
+      if (result) {
+        itemGroup.patchValue({
+          weight: result.totalWeight,
+          quantity: result.totalSqFeet,
+          calculations: result.calculations
+        });
+        this.calculateItemPrice(index);
+      }
+    });
   }
 
   validateDates(): void {

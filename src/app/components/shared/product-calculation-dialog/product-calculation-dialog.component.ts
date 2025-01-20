@@ -28,12 +28,19 @@ export class ProductCalculationDialogComponent {
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: DialogRef<ProductCalculationTotal>,
-    @Inject(DIALOG_DATA) public data: { product: Product; calculationType: ProductCalculationType }
+    private dialogRef: DialogRef<any>,
+    @Inject(DIALOG_DATA) public data: { 
+      product: Product; 
+      calculationType: ProductCalculationType;
+      savedCalculations: any[];
+    }
   ) {
     this.product = data.product;
     this.calculationType = data.calculationType;
     this.initForm();
+    if (data.savedCalculations?.length) {
+      this.loadSavedCalculations();
+    }
   }
 
   private initForm(): void {
@@ -108,9 +115,35 @@ export class ProductCalculationDialogComponent {
     });
   }
 
+  private loadSavedCalculations(): void {
+    this.calculationsArray.clear();
+    this.data.savedCalculations.forEach(calc => {
+      const row = this.fb.group({
+        feet: [calc.feet, [Validators.required, Validators.min(0)]],
+        inch: [calc.inch, [Validators.required, Validators.min(0)]],
+        nos: [calc.nos, [Validators.required, Validators.min(1)]],
+        runningFeet: [{value: calc.runningFeet, disabled: true}],
+        sqFeet: [{value: calc.sqFeet, disabled: true}],
+        weight: [{value: calc.weight, disabled: true}]
+      });
+      row.valueChanges.subscribe(() => this.calculateRow(this.calculationsArray.length - 1));
+      this.calculationsArray.push(row);
+    });
+    this.calculateTotals();
+  }
+
   onSave(): void {
     if (this.calculationForm.valid) {
-      this.dialogRef.close(this.totals);
+      const result = {
+        ...this.totals,
+        calculations: this.calculationsArray.controls.map(control => ({
+          ...control.value,
+          runningFeet: control.get('runningFeet')?.value,
+          sqFeet: control.get('sqFeet')?.value,
+          weight: control.get('weight')?.value
+        }))
+      };
+      this.dialogRef.close(result);
     }
   }
 
