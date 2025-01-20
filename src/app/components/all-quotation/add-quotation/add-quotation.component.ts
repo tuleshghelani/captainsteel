@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormControl, AbstractControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { formatDate } from '@angular/common';
@@ -67,6 +67,11 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   quotationId?: number;
   isDialogOpen = false;
   selectedProduct!: string
+  totals: { price: number; tax: number; finalPrice: number } = {
+    price: 0,
+    tax: 0,
+    finalPrice: 0
+  };
 
   get itemsFormArray() {
     return this.quotationForm.get('items') as FormArray;
@@ -238,6 +243,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     });
     this.setupItemCalculations(itemGroup, this.itemsFormArray.length);
     this.itemsFormArray.push(itemGroup);
+    this.calculateTotalAmount();
   }
 
   private createProductFormGroup(): FormGroup {
@@ -282,11 +288,9 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     }
   }
 
-  removeItem(index: number) {
-    if (this.itemsFormArray.length > 1) {
-      this.itemsFormArray.removeAt(index);
-      this.calculateTotalAmount();
-    }
+  removeItem(index: number): void {
+    this.itemsFormArray.removeAt(index);
+    this.calculateTotalAmount();
   }
 
   private setupItemCalculations(group: FormGroup, index: number) {
@@ -321,7 +325,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       finalPrice: Number(finalPrice.toFixed(2))
     }, { emitEvent: false });
 
-    // Trigger change detection
+    this.calculateTotalAmount();
     this.cdr.detectChanges();
   }
 
@@ -397,10 +401,27 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
   }
 
   private calculateTotalAmount(): void {
-    const total = this.itemsFormArray.controls
-      .reduce((sum, group: any) => sum + (group.get('finalPrice').value || 0), 0);
-    
-    this.quotationForm.patchValue({ totalAmount: total }, { emitEvent: false });
+    const totals = {
+      price: 0,
+      tax: 0,
+      finalPrice: 0
+    };
+
+    this.itemsFormArray.controls.forEach((group: AbstractControl) => {
+      const price = group.get('price')?.value || 0;
+      const finalPrice = group.get('finalPrice')?.value || 0;
+      const taxPercentage = group.get('taxPercentage')?.value || 18;
+      
+      totals.price += price;
+      totals.tax += (price * taxPercentage) / 100;
+      totals.finalPrice += finalPrice;
+    });
+
+    this.totals = {
+      price: Number(totals.price.toFixed(2)),
+      tax: Number(totals.tax.toFixed(2)),
+      finalPrice: Number(totals.finalPrice.toFixed(2))
+    };
   }
 
   resetForm(): void {
