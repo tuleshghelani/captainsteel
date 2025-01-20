@@ -1,7 +1,7 @@
 <div class="category-container">
   <app-loader [show]="isLoading"></app-loader>
   <div class="search-section card">
-    <h2>Search Categories</h2>
+    <h3>Search Categories</h3>
     <div class="search-container">
       <form [formGroup]="searchForm" class="search-form">
         <div class="search-inputs">
@@ -10,14 +10,14 @@
             <option value="A">Active</option>
             <option value="I">Inactive</option>
           </select>
-          <button class="btn btn-primary" (click)="onSearch()">
-            <i class="fas fa-search"></i> Search
+          <button class="search-btn btn btn-primary" (click)="onSearch()">
+            <i class="fas fa-search me-2"></i> Search
           </button>
         </div>
       </form>
     </div>
   </div>
-  <button class="btn btn-primary mb-2" (click)="openCreateDialog()">
+  <button class="btn btn-sm btn-primary mb-2" (click)="openCreateDialog()">
     <i class="fas fa-plus"></i> Create Category
   </button>
 
@@ -98,8 +98,8 @@
         </select>
       </div>
       <div class="dialog-actions">
-        <button type="button" class="btn btn-secondary" (click)="closeDialog()">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid || isLoading">
+        <button type="button" class="btn btn-sm btn-secondary" (click)="closeDialog()">Cancel</button>
+        <button type="submit" class="btn btn-sm btn-primary" [disabled]="categoryForm.invalid || isLoading">
           <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
           {{ isEditing ? 'Update' : 'Create' }}
         </button>

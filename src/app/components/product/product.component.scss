@@ -11,10 +11,13 @@
     .search-controls {
       display: flex;
       gap: 1rem;
-      align-items: flex-end;
 
       .form-group {
         flex: 1;
+      }
+
+      .form-control {
+        max-height: 42px;
       }
 
       button {
@@ -243,6 +246,11 @@
       grid-column: 1 / -1;
     }
   }
+  .form-control {
+    height: 40px;
+    padding-top: 6px;
+    margin-top: 8px;
+  }
 
   @media (max-width: 576px) {
     width: calc(100% - 2rem);
@@ -310,7 +318,7 @@
 
 .dialog-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content:space-between;
   gap: 1rem;
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border);

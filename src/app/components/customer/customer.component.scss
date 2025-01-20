@@ -1,29 +1,5 @@
 @import '../../../variables';
 
-.search-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-
-  .search-container {
-    flex: 1;
-    max-width: 300px;
-
-    .form-control {
-      border-radius: 20px;
-      padding: 10px 20px;
-      border: 2px solid var(--supporting);
-      transition: all 0.3s ease;
-
-      &:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px rgba($primary, 0.1);
-      }
-    }
-  }
-}
-
 .table-responsive {
   margin: 0 -20px;
   padding: 0 20px;
@@ -126,7 +102,7 @@
     .search-controls {
       display: flex;
       gap: 10px;
-      align-items: center;
+      align-items: start;
 
       .form-group {
         flex: 1;
@@ -312,12 +288,11 @@
   .button-group {
     display: flex;
     gap: 0.5rem;
-    align-items: flex-end;
-    
-    button {
-      // flex: 1;
-    }
   }
+}
+
+.form-control {
+  height: 43px;
 }
 
 @media (max-width: 768px) {

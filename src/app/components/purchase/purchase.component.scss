@@ -32,6 +32,10 @@
         .form-group {
           margin: 0;
   
+          .form-control {
+            height: 40px;
+          }
+
           .product-select-group {
             display: flex;
             gap: 0.5rem;

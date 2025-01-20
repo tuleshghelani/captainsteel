@@ -1,5 +1,5 @@
 <div class="add-purchase-container">
-  <button class="btn btn-secondary back-btn" routerLink="/purchase">
+  <button class="btn btn-sm btn-secondary back-btn" routerLink="/purchase">
     <i class="fas fa-arrow-left"></i> Back to Purchases
   </button>
 
@@ -30,7 +30,7 @@
               ></app-searchable-select>
               <button 
                 type="button" 
-                class="btn-icon refresh" 
+                class="btn btn-sm btn-primary refresh mt-2" 
                 (click)="refreshCustomers()" 
                 [disabled]="isLoadingCustomers"
                 title="Refresh Customers"
@@ -81,7 +81,7 @@
       <div class="products-section" formArrayName="products">
         <div class="products-header">
           <h3><i class="fas fa-boxes"></i> Products</h3>
-          <button type="button" class="btn btn-primary" (click)="addProduct()">
+          <button type="button" class="btn btn-sm btn-primary" (click)="addProduct()">
             <i class="fas fa-plus"></i> Add Product
           </button>
         </div>
@@ -190,7 +190,7 @@
                 <td>
                   <button 
                     type="button" 
-                    class="btn-icon remove-product" 
+                    class="btn btn-sm btn-danger" 
                     (click)="removeProduct(i)"
                     [disabled]="productsFormArray.length === 1"
                     title="Remove Product"
@@ -220,7 +220,7 @@
       <div class="form-actions">
         <button 
           type="button" 
-          class="btn btn-secondary"
+          class="btn btn-sm btn-secondary"
           (click)="resetForm()"
           [disabled]="loading"
         >
@@ -228,7 +228,7 @@
         </button>
         <button 
           type="submit" 
-          class="btn btn-primary"
+          class="btn btn-sm btn-primary"
           [disabled]="purchaseForm.invalid || loading"
         >
           <i class="fas" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-save'"></i>

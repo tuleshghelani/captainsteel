@@ -46,13 +46,13 @@
   .header-section {
     background-color: var(--background-light);
     border-radius: var(--border-radius);
-    padding: 1.5rem;
+    // padding: 1.5rem;
     margin-bottom: 2rem;
   
     .form-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 0px 10px;
   
       @media (max-width: 768px) {
         grid-template-columns: 1fr;
@@ -217,32 +217,32 @@
 }
 
 /* Buttons styling */
-.btn {
-  padding: 8px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+// .btn {
+//   padding: 8px 15px;
+//   border: none;
+//   border-radius: 5px;
+//   cursor: pointer;
+// }
 
-.btn-add {
-  background-color: #4CAF50;
-  color: white;
-  margin-top: 10px;
-}
+// .btn-add {
+//   background-color: #4CAF50;
+//   color: white;
+//   margin-top: 10px;
+// }
 
-.btn-submit {
-  background-color: #0099cc;
-  color: white;
-}
+// .btn-submit {
+//   background-color: #0099cc;
+//   color: white;
+// }
 
-.btn-delete {
-  background-color: #ff6347;
-  color: white;
-}
+// .btn-delete {
+//   background-color: #ff6347;
+//   color: white;
+// }
 
-.btn:hover {
-  opacity: 0.8;
-}
+// .btn:hover {
+//   opacity: 0.8;
+// }
 
 /* Responsive design */
 @media (max-width: 768px) {
@@ -340,7 +340,7 @@
   
   // Form Controls Styles
   .form-group {
-    margin-bottom: 1rem;
+    // margin-bottom: 1rem;
   
     label {
       display: flex;
@@ -468,6 +468,7 @@
   
       .form-control {
         min-width: 90px;
+        height: 40px;
       }
   
       &:first-child {
@@ -581,4 +582,8 @@
       background-color: #fff;
     }
   }
+}
+
+.search-input {
+  height: 43px !important;
 }

@@ -233,12 +233,12 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn btn-secondary" routerLink="/employee">
+        <button type="button" class="btn btn-sm btn-secondary" routerLink="/employee">
           <i class="fas fa-times"></i> Cancel
         </button>
         <button 
           type="submit" 
-          class="btn btn-primary"
+          class="btn btn-sm btn-primary"
           [disabled]="employeeForm.invalid || isLoading"
         >
           <i class="fas" [ngClass]="isLoading ? 'fa-spinner fa-spin' : (isEditMode ? 'fa-save' : 'fa-plus')"></i>

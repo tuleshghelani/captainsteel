@@ -25,7 +25,8 @@
               ></app-searchable-select>
               <button 
                 type="button" 
-                class="btn-icon refresh" 
+                class="btn btn-sm btn-primary refresh"
+                style="margin-top: 3px;"
                 (click)="refreshCustomers()" 
                 [disabled]="isLoadingCustomers"
                 title="Refresh Customers"
@@ -65,17 +66,17 @@
             >
           </div>
           <div class="button-group">
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="search-btn btn btn-sm btn-primary">
               <i class="fas fa-search"></i> Search
             </button>
-            <button type="button" class="btn btn-secondary" (click)="resetForm()">
+            <button type="button" class="search-btn btn btn-sm btn-secondary" (click)="resetForm()">
               <i class="fas fa-undo"></i> Reset
             </button>
           </div>
         </div>
       </form>
     </div>
-      <button class="btn btn-primary mb-2" (click)="addQuotation()">Add Quotation</button>
+      <button class="btn btn-sm btn-primary mb-2" (click)="addQuotation()">Add Quotation</button>
     <div class="quotations-list card">
       <h2>Quotations</h2>
   

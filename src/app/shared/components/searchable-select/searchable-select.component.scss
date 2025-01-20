@@ -9,12 +9,13 @@
     
     .search-input {
       // width: 100%;
-      padding: 8px 32px 8px 12px;
+      padding: 11px 32px 11px 12px;
       border: 1px solid var(--supporting);
       border-radius: 4px;
       font-size: 0.9rem;
       transition: all 0.3s ease;
-      
+      height: 40px;
+      width: 100%;
       &:focus {
         outline: none;
         border-color: var(--primary);

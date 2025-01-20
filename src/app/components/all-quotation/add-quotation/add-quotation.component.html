@@ -1,5 +1,5 @@
 <div class="add-quotation-container">
-  <button class="btn btn-secondary back-btn" routerLink="/quotation">
+  <button class="btn btn-sm btn-secondary back-btn" routerLink="/quotation">
     <i class="fas fa-arrow-left"></i> Back to Quotations
   </button>
 
@@ -10,9 +10,10 @@
         {{ isEdit ? 'Edit' : 'Create New' }} Quotation
       </h2>
     </div>
-    
+
     <!-- create quotation section -->
-    <form [formGroup]="quotationForm" (ngSubmit)="onSubmit()" (keydown.enter)="$event.preventDefault()" class="quotation-form">
+    <form [formGroup]="quotationForm" (ngSubmit)="onSubmit()" (keydown.enter)="$event.preventDefault()"
+      class="quotation-form">
       <div class="create-quotation-section">
         <div class="create-quotation-header">
           <h3><i class="fa-solid fa-receipt"></i> Create Quotation </h3>
@@ -26,21 +27,10 @@
                 <i class="fas fa-user"></i> Select Customer
               </label>
               <div class="select-group">
-                <app-searchable-select
-                  formControlName="customerId"
-                  [options]="customers"
-                  labelKey="name"
-                  valueKey="id"
-                  [placeholder]="'Select Customer'"
-                  [searchPlaceholder]="'Search customers...'"
-                ></app-searchable-select>
-                <button 
-                  type="button" 
-                  class="btn-icon refresh" 
-                  (click)="refreshCustomers()" 
-                  [disabled]="isLoadingCustomers"
-                  title="Refresh Customers"
-                >
+                <app-searchable-select formControlName="customerId" [options]="customers" labelKey="name" valueKey="id"
+                  [placeholder]="'Select Customer'" [searchPlaceholder]="'Search customers...'"></app-searchable-select>
+                <button type="button" class="btn btn-sm btn-primary refresh" style="margin-top: 3px;" (click)="refreshCustomers()"
+                  [disabled]="isLoadingCustomers" title="Refresh Customers">
                   <i class="fas" [ngClass]="isLoadingCustomers ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
                 </button>
               </div>
@@ -51,30 +41,20 @@
               <label>
                 <i class="fas fa-user-tag"></i> Customer Name <span class="required">*</span>
               </label>
-              <input 
-                type="text" 
-                formControlName="customerName" 
-                class="form-control"
-                [class.is-invalid]="isFieldInvalid('customerName')"
-                placeholder="Enter customer name"
-              >
+              <input type="text" formControlName="customerName" class="form-control"
+                [class.is-invalid]="isFieldInvalid('customerName')" placeholder="Enter customer name">
               <div class="invalid-feedback" *ngIf="isFieldInvalid('customerName')">
                 Customer name is required
               </div>
             </div>
 
             <!--Contact number -->
-            <div class="form-group col-4">
+            <div class="form-group">
               <label>
                 <i class="fa-solid fa-phone"></i> Contact Number <span class="required">*</span>
               </label>
-              <input 
-                type="text" 
-                formControlName="contactNumber" 
-                class="form-control"
-                [class.is-invalid]="isFieldInvalid('contactNumber')"
-                placeholder="Enter contact number"
-              >
+              <input type="text" formControlName="contactNumber" class="form-control"
+                [class.is-invalid]="isFieldInvalid('contactNumber')" placeholder="Enter contact number">
               <div class="invalid-feedback" *ngIf="isFieldInvalid('contactNumber')">
                 Contact Number is required
               </div>
@@ -85,25 +65,16 @@
               <label>
                 <i class="fa-solid fa-location-dot"></i> Address
               </label>
-              <textarea 
-                formControlName="address" 
-                class="form-control" 
-                rows="3"
-                placeholder="Write customer address details..."
-              ></textarea>
+              <textarea formControlName="address" class="form-control" rows="3"
+                placeholder="Write customer address details..."></textarea>
             </div>
-            
+
             <!-- Quote Date -->
             <div class="form-group">
               <label>
                 <i class="fas fa-calendar"></i> Quote Date
               </label>
-              <input 
-                type="date" 
-                formControlName="quoteDate" 
-                class="form-control"
-                readonly
-              >
+              <input type="date" formControlName="quoteDate" class="form-control" readonly>
             </div>
 
             <!-- Valid Until -->
@@ -111,13 +82,8 @@
               <label>
                 <i class="fas fa-calendar-check"></i> Valid Until <span class="required">*</span>
               </label>
-              <input 
-                type="date" 
-                formControlName="validUntil" 
-                class="form-control"
-                [class.is-invalid]="isFieldInvalid('validUntil')"
-                [min]="minValidUntilDate"
-              >
+              <input type="date" formControlName="validUntil" class="form-control"
+                [class.is-invalid]="isFieldInvalid('validUntil')" [min]="minValidUntilDate">
               <div class="invalid-feedback" *ngIf="isFieldInvalid('validUntil')">
                 Valid until date is required and must be after quote date
               </div>
@@ -126,213 +92,165 @@
         </div>
       </div>
 
-        <!-- Products Section -->
-        <div class="products-section" formArrayName="items">
-          <div class="products-header">
-            <h3><i class="fas fa-boxes"></i> Products</h3>
-            <button type="button" class="btn btn-primary" (click)="addItem()">
-              <i class="fas fa-plus"></i> Add Product
-            </button>
-          </div>
+      <!-- Products Section -->
+      <div class="products-section" formArrayName="items">
+        <div class="products-header">
+          <h3><i class="fas fa-boxes"></i> Products</h3>
+          <button type="button" class="btn btn-sm btn-primary" (click)="addItem()">
+            <i class="fas fa-plus"></i> Add Product
+          </button>
+        </div>
 
-          <div class="table-responsive">
-            <table class="table products-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Calculation Type</th>
-                  <th>Weight</th>
-                  <th>Quantity</th>
-                  <th>Unit Price</th>
-                  <th>Discount %</th>
-                  <th>Price</th>
-                  <th>Tax %</th>
-                  <th>Final Price</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of itemsFormArray.controls; let i=index" [formGroupName]="i">
-                  <!-- Product Selection -->
-                  <td>
-                    <div class="form-field-container">
-                      <app-searchable-select
-                        [formControlName]="'productId'"
-                        [options]="products"
-                        [labelKey]="'name'"
-                        [valueKey]="'id'"
-                        [placeholder]="'Select Product'"
-                        [searchPlaceholder]="'Search products...'"
-                        [class.is-invalid]="isItemFieldInvalid(i, 'productId')"
-                        (selectionChange)="onProductSelect(i, $event)"
-                      ></app-searchable-select>
-                      <button *ngIf="itemsFormArray.at(i).get('productType')?.value === 'REGULAR'"
-                        type="button"
-                        class="btn-icon calculate"
-                        (click)="openCalculationDialog(i)"
-                        title="Open Calculator"
-                      >
-                        <i class="fas fa-calculator"></i>
-                      </button>
-                    </div>
-                  </td>
-
-                  <!-- Regular Product specific fields -->
-                  <ng-container *ngIf="itemsFormArray.at(i).get('productType')?.value == 'REGULAR'">
-                    <td>
-                      <select 
-                        [formControlName]="'calculationType'"
-                        class="form-control"
-                        (change)="onCalculationTypeChange(i, $event)"
-                      > 
-                        <option value="" disabled selected>Select Calculation Type</option>
-                        <option value="SQ_FEET">Sq. Feet</option>
-                        <option value="MM">MM</option>
-                      </select>
-                    </td>
-                    <td>
-                      <input type="number" formControlName="weight" class="form-control" readonly>
-                    </td>
-                  </ng-container>
-                  <ng-container *ngIf="itemsFormArray.at(i).get('productType')?.value != 'REGULAR'">
-                    <td></td>
-                    <td></td>
-                  </ng-container>
-
-                  <!-- Common fields -->
-                  <td>
-                    <input 
-                      type="number" 
-                      formControlName="quantity" 
-                      class="form-control"
-                      [class.is-invalid]="isItemFieldInvalid(i, 'quantity')"
-                      min="1"
-                      [readonly]="itemsFormArray.at(i).get('productType')?.value === 'REGULAR'"
-                    >
-                  </td>
-                  <td>
-                    <div class="input-group">
-                      <span class="input-group-text">₹</span>
-                      <input 
-                        type="number" 
-                        formControlName="unitPrice" 
-                        class="form-control"
-                        [class.is-invalid]="isItemFieldInvalid(i, 'unitPrice')"
-                        min="0.01"
-                        step="0.01"
-                      >
-                    </div>
-                  </td>
-                  <td>
-                    <div class="input-group">
-                      <input 
-                        type="number" 
-                        formControlName="discountPercentage" 
-                        class="form-control"
-                        [class.is-invalid]="isItemFieldInvalid(i, 'discountPercentage')"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                      >
-                      <span class="input-group-text">%</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="input-group">
-                      <span class="input-group-text">₹</span>
-                      <input 
-                        type="number" 
-                        formControlName="price" 
-                        class="form-control"
-                        readonly
-                      >
-                    </div>
-                  </td>
-                  <td>
-                    <div class="input-group">
-                      <input 
-                        type="number" 
-                        formControlName="taxPercentage" 
-                        class="form-control"
-                        value="18"
-                        readonly
-                      >
-                      <span class="input-group-text">%</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="input-group">
-                      <span class="input-group-text">₹</span>
-                      <input 
-                        type="number" 
-                        formControlName="finalPrice" 
-                        class="form-control"
-                        readonly
-                      >
-                    </div>
-                  </td>
-                  <td>
-                    <button type="button" (click)="removeItem(i)" class="btn btn-delete">
-                      <i class="fa-solid fa-trash"></i>
+        <div class="table-responsive">
+          <table class="table products-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Calculation Type</th>
+                <th>Weight</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Discount %</th>
+                <th>Price</th>
+                <th>Tax %</th>
+                <th>Final Price</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of itemsFormArray.controls; let i=index" [formGroupName]="i">
+                <!-- Product Selection -->
+                <td>
+                  <div class="form-field-container">
+                    <app-searchable-select [formControlName]="'productId'" [options]="products" [labelKey]="'name'"
+                      [valueKey]="'id'" [placeholder]="'Select Product'" [searchPlaceholder]="'Search products...'"
+                      [class.is-invalid]="isItemFieldInvalid(i, 'productId')"
+                      (selectionChange)="onProductSelect(i, $event)"></app-searchable-select>
+                    <button *ngIf="itemsFormArray.at(i).get('productType')?.value === 'REGULAR'" type="button"
+                      class="btn btn-sm btn-primary calculator mt-2 search-input" (click)="openCalculationDialog(i)" title="Open Calculator">
+                      <i class="fas fa-calculator"></i>
                     </button>
-                  </td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="6" class="text-end"><strong>Total:</strong></td>
+                  </div>
+                </td>
+
+                <!-- Regular Product specific fields -->
+                <ng-container *ngIf="itemsFormArray.at(i).get('productType')?.value == 'REGULAR'">
                   <td>
-                    <div class="input-group">
-                      <span class="input-group-text">₹</span>
-                      <input type="number" [value]="totals.price" class="form-control" readonly>
+                    <div class="dropdown">
+                      <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">{{ itemsFormArray.at(i).get('calculationType')?.value || 'Select Calculation Type' }} </button>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <a class="dropdown-item" href="javascript:void(0)"
+                            (click)="onSelectCalculationType(i,'SQ_FEET')">
+                            Sq. Feet
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item" href="javascript:void(0)" (click)="onSelectCalculationType(i,'MM')">
+                            MM
+                          </a>
+                        </li>
+                      </ul>
                     </div>
-                  </td>
                   <td>
-                    <div class="input-group">
-                      <input type="number" [value]="totals.tax" class="form-control" readonly>
-                    </div>
+                    <input type="number" formControlName="weight" class="form-control" readonly>
                   </td>
-                  <td>
-                    <div class="input-group">
-                      <span class="input-group-text">₹</span>
-                      <input type="number" [value]="totals.finalPrice" class="form-control" readonly>
-                    </div>
-                  </td>
+                </ng-container>
+                <ng-container *ngIf="itemsFormArray.at(i).get('productType')?.value != 'REGULAR'">
                   <td></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+                  <td></td>
+                </ng-container>
+
+                <!-- Common fields -->
+                <td>
+                  <input type="number" formControlName="quantity" class="form-control"
+                    [class.is-invalid]="isItemFieldInvalid(i, 'quantity')" min="1"
+                    [readonly]="itemsFormArray.at(i).get('productType')?.value === 'REGULAR'">
+                </td>
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" formControlName="unitPrice" class="form-control"
+                      [class.is-invalid]="isItemFieldInvalid(i, 'unitPrice')" min="0.01" step="0.01">
+                  </div>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <input type="number" formControlName="discountPercentage" class="form-control"
+                      [class.is-invalid]="isItemFieldInvalid(i, 'discountPercentage')" min="0" max="100" step="0.01">
+                    <span class="input-group-text">%</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" formControlName="price" class="form-control" readonly>
+                  </div>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <input type="number" formControlName="taxPercentage" class="form-control" value="18" readonly>
+                    <span class="input-group-text">%</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" formControlName="finalPrice" class="form-control" readonly>
+                  </div>
+                </td>
+                <td>
+                  <button type="button" (click)="removeItem(i)" class="btn btn-sm btn-danger">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="6" class="text-end"><strong>Total:</strong></td>
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" [value]="totals.price" class="form-control" readonly>
+                  </div>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <input type="number" [value]="totals.tax" class="form-control" readonly>
+                  </div>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" [value]="totals.finalPrice" class="form-control" readonly>
+                  </div>
+                </td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Additional Details -->
+      <div class="d-flex mt-3">
+        <div class="form-group w-50">
+          <label>
+            <i class="fas fa-comment"></i> Remarks
+          </label>
+          <textarea formControlName="remarks" class="form-control" rows="3" placeholder="Optional remarks"></textarea>
         </div>
 
-        <!-- Additional Details -->
-        <div class="additional-details">
-          <div class="form-row">
-            <div class="form-group">
-              <label>
-                <i class="fas fa-comment"></i> Remarks
-              </label>
-              <textarea 
-                formControlName="remarks" 
-                class="form-control" 
-                rows="3"
-                placeholder="Optional remarks"
-              ></textarea>
-            </div>
-
-            <div class="form-group">
-              <label>
-                <i class="fas fa-file-contract"></i> Terms & Conditions
-              </label>
-              <textarea 
-                formControlName="termsConditions" 
-                class="form-control" 
-                rows="3"
-                placeholder="Optional terms and conditions"
-              ></textarea>
-            </div>
-          </div>
+        <div class="form-group w-50">
+          <label>
+            <i class="fas fa-file-contract"></i> Terms & Conditions
+          </label>
+          <textarea formControlName="termsConditions" class="form-control" rows="3"
+            placeholder="Optional terms and conditions"></textarea>
         </div>
+      </div>
 
       <!-- Summary Section -->
       <div class="quotation-summary">
@@ -348,19 +266,10 @@
 
       <!-- Form Actions -->
       <div class="form-actions">
-        <button 
-          type="button" 
-          class="btn btn-secondary"
-          (click)="resetForm()"
-          [disabled]="loading"
-        >
+        <button type="button" class="btn btn-sm btn-secondary" (click)="resetForm()" [disabled]="loading">
           <i class="fas fa-undo"></i> Reset
         </button>
-        <button 
-          type="submit" 
-          class="btn btn-primary"
-          [disabled]="quotationForm.invalid || loading"
-        >
+        <button type="submit" class="btn btn-sm btn-primary" [disabled]="quotationForm.invalid || loading">
           <i class="fas" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-save'"></i>
           {{ loading ? 'Saving...' : 'Save Quotation' }}
         </button>

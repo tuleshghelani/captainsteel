@@ -1,7 +1,7 @@
 <div class="product-container">
   <app-loader [show]="isLoading" message="Processing..."></app-loader>
   <div class="search-section card">
-    <h2>Search Products</h2>
+    <h3>Search Products</h3>
     <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
       <div class="search-controls">
         <div class="form-group">
@@ -26,14 +26,14 @@
             <option value="I">Inactive</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" class="search-btn btn btn-primary">
           <i class="fas fa-search"></i> Search
         </button>
       </div>
     </form>
   </div>
 
-  <button class="btn btn-primary mb-2" (click)="openCreateDialog()">
+  <button class="btn btn-sm btn-primary mb-2" (click)="openCreateDialog()">
     <i class="fas fa-plus"></i> Create Product
   </button>
 
@@ -256,12 +256,12 @@
     </div>
 
     <div class="dialog-actions">
-      <button type="button" class="btn btn-secondary" (click)="closeDialog()">
+      <button type="button" class="btn btn-sm btn-secondary" (click)="closeDialog()">
         <i class="fas fa-times"></i> Cancel
       </button>
       <button 
         type="submit" 
-        class="btn btn-primary"
+        class="btn btn-sm btn-primary"
         [disabled]="productForm.invalid || isLoading"
       >
         <i class="fas" [ngClass]="isLoading ? 'fa-spinner fa-spin' : (isEditing ? 'fa-save' : 'fa-plus')"></i>

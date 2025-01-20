@@ -597,4 +597,11 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       .reduce((total, group) => total + (group.get('finalPrice')?.value || 0), 0);
   }
 
+  onSelectCalculationType(index:number, type: string): void {
+    const itemGroup = this.itemsFormArray.at(index) as FormGroup
+    itemGroup.get('calculationType')?.setValue(type);
+    itemGroup.updateValueAndValidity();
+    console.log('>>>>',itemGroup.value)
+  }
+
 }

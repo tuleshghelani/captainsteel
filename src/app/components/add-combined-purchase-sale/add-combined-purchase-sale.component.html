@@ -1,5 +1,5 @@
 <div class="combined-form-container">
-    <button class="btn btn-secondary back-btn" routerLink="/purchase">
+    <button class="btn btn-sm btn-secondary back-btn" routerLink="/purchase">
       <i class="fas fa-arrow-left"></i> Back to Purchases
     </button>
      <div class="form-card">
@@ -31,7 +31,7 @@
                 ></app-searchable-select>
                 <button 
                   type="button" 
-                  class="btn-icon refresh" 
+                  class="btn btn-primary btn-sm refresh mt-2" 
                   (click)="refreshProducts()" 
                   [disabled]="isLoadingProducts"
                   title="Refresh Products"
@@ -130,7 +130,7 @@
                 </div>
 
                 <!-- Purchase Discount Section -->
-                <div class="discount-group">
+                <!-- <div class="discount-group"> -->
                   <div class="form-group">
                     <label for="purchaseDiscount">
                       <i class="fas fa-percent"></i> Discount Percentage
@@ -180,7 +180,7 @@
                       >
                     </div>
                   </div>
-                </div>
+                <!-- </div> -->
               </div>
             </div>
 
@@ -253,7 +253,7 @@
                 </div>
 
                 <!-- Sale Discount Section -->
-                <div class="discount-group">
+                <!-- <div class="discount-group"> -->
                   <div class="form-group">
                     <label for="saleDiscount">
                       <i class="fas fa-percent"></i> Discount Percentage
@@ -303,7 +303,7 @@
                       >
                     </div>
                   </div>
-                </div>
+                <!-- </div> -->
               </div>
             </div>
           </div>
@@ -312,7 +312,7 @@
         <div class="form-actions">
           <button 
             type="button" 
-            class="btn btn-secondary"
+            class="btn btn-sm btn-secondary"
             (click)="resetForm()"
             [disabled]="loading"
           >
@@ -320,7 +320,7 @@
           </button>
           <button 
             type="submit" 
-            class="btn btn-primary"
+            class="btn btn-sm btn-primary"
             [disabled]="combinedForm.invalid || loading"
           >
             <i class="fas" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-save'"></i>

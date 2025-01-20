@@ -1,6 +1,6 @@
-.sale-modal {
-    padding: 1.5rem;
-    width: 100%;
+// .sale-modal {
+    // padding: 1.5rem;
+    // width: 100%;
     
     .modal-header {
       display: flex;
@@ -47,14 +47,23 @@
         color: var(--text-primary);
         font-weight: 500;
       }
-  
+      
+      .input-group {
+        max-width: 300px;
+      }
+
       .form-control {
         transition: all 0.3s ease;
-        
+        margin-top: 8px;
+        height: 43px;
         &:focus {
           border-color: var(--primary);
           box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
         }
+      }
+      .input-group-text {
+        height: 43px;
+        margin-top: 8px;
       }
   
       .invalid-feedback {
@@ -66,7 +75,7 @@
   
     .modal-actions {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       gap: 1rem;
       margin-top: 2rem;
       padding-top: 1rem;
@@ -76,7 +85,7 @@
         min-width: 120px;
       }
     }
-  }
+  // }
   
   @media (max-width: 576px) {
     .sale-modal {
@@ -139,7 +148,7 @@
   .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 0px 40px;
     margin-bottom: 1.5rem;
 
     .form-group.full-width {
