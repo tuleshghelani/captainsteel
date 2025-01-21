@@ -602,7 +602,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     const itemGroup = this.itemsFormArray.at(index) as FormGroup
     itemGroup.get('calculationType')?.setValue(type);
     itemGroup.updateValueAndValidity();
-    console.log('>>>>',itemGroup.value)
+    this.openCalculationDialog(index);
   }
 
 }

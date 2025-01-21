@@ -25,7 +25,7 @@
       input {
         width: 85px;
         text-align: center;
-        height: 40px;
+        height: 35px;
         &:read-only {
           background-color: var(--background-light);
         }
@@ -46,7 +46,7 @@
 
 .dialog-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 1rem;
 }
 
@@ -121,4 +121,21 @@
 
 .bottom-border {
   border-top: 1px solid gray;
+}
+
+.table-col {
+  position: relative;
+  .error {
+    position: absolute;
+    left: 0%;
+    bottom: 0%;
+    color: red;
+    font-size: 11px;
+    padding-bottom: 8px;
+  }
+}
+
+.delete-btn {
+  height: 35px;
+  padding-top: 7px;
 }

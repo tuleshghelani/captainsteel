@@ -496,13 +496,17 @@
   .form-field-container {
     position: relative;
     margin-bottom: 1rem;
-  
+    min-width: 220px;
     .form-control, .input-group {
       &.is-invalid {
         border-color: var(--danger);
         background-image: url("data:image/svg+xml,..."); // Error icon SVG
       }
     }
+  }
+  
+  .calc-type-col, .dropdown {
+    min-width: 130px;
   }
   
   .products-table {

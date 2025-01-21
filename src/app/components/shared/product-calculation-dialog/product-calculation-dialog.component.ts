@@ -56,8 +56,8 @@ export class ProductCalculationDialogComponent {
 
   addRow(): void {
     const row = this.fb.group({
-      feet: [0, [Validators.required, Validators.min(0)]],
-      inch: [0, [Validators.required, Validators.min(0)]],
+      feet: [1, [Validators.required, Validators.min(1)]],
+      inch: [1, [Validators.required, Validators.min(1)]],
       nos: [1, [Validators.required, Validators.min(1)]],
       runningFeet: [{value: 0, disabled: true}],
       sqFeet: [{value: 0, disabled: true}],
@@ -66,6 +66,12 @@ export class ProductCalculationDialogComponent {
 
     row.valueChanges.subscribe(() => this.calculateRow(this.calculationsArray.controls.indexOf(row)));
     this.calculationsArray.push(row);
+  }
+
+  isFormArrayInvalid(){
+    return this.calculationsArray.controls.some(control => {
+      return control.invalid;
+    });
   }
 
   removeRow(index: number): void {

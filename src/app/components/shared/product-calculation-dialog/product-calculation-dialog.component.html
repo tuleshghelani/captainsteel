@@ -5,9 +5,9 @@
         <i class="fas fa-calculator"></i>
         Product Calculation - {{ product.name }}
       </h3>
-      <button class="close-button" (click)="closeDialog()">
+      <!-- <button class="close-button" (click)="closeDialog()">
         <i class="fas fa-times"></i>
-      </button>
+      </button> -->
     </div>
 
     <div class="modal-content">
@@ -27,14 +27,26 @@
             </thead>
             <tbody formArrayName="calculations">
               <tr *ngFor="let row of calculationsArray.controls; let i = index" [formGroupName]="i">
-                <td>
+                <td class="table-col">
                   <input type="number" formControlName="feet" class="form-control" min="0">
+                  <div *ngIf="row.get('feet')?.invalid && row.get('feet')?.touched" class="error">
+                    <span *ngIf="row.get('feet')?.errors?.['required']" class="ps-3">Feet is required.</span>
+                    <span *ngIf="row.get('feet')?.errors?.['min']">Value must be greater than 0.</span>
+                  </div>
                 </td>
-                <td>
+                <td class="table-col">
                   <input type="number" formControlName="inch" class="form-control" min="0">
+                  <div *ngIf="row.get('inch')?.invalid && row.get('inch')?.touched" class="error">
+                    <span *ngIf="row.get('inch')?.errors?.['required']" class="ps-3">Inch is required.</span>
+                    <span *ngIf="row.get('inch')?.errors?.['min']">Value must be greater than 0.</span>
+                  </div>
                 </td>
-                <td>
+                <td class="table-col">
                   <input type="number" formControlName="nos" class="form-control" min="1">
+                  <div *ngIf="row.get('nos')?.invalid && row.get('nos')?.touched" class="error">
+                    <span *ngIf="row.get('nos')?.errors?.['required']" class="ps-3">NOS is required.</span>
+                    <span *ngIf="row.get('nos')?.errors?.['min']">Value must be greater than 0.</span>
+                  </div>
                 </td>
                 <td>
                   <input type="number" formControlName="runningFeet" class="form-control" readonly>
@@ -48,7 +60,7 @@
                 <td class="pt-0">
                   <button 
                     type="button" 
-                    class="btn btn-sm btn-danger" 
+                    class="btn btn-sm btn-danger delete-btn" 
                     (click)="removeRow(i)"
                     [disabled]="calculationsArray.length === 1"
                   >
@@ -72,12 +84,19 @@
         </div>
 
         <div class="dialog-actions">
-          <button type="button" class="btn btn-sm btn-secondary" (click)="addRow()">
-            <i class="fas fa-plus"></i> Add Row
-          </button>
-          <button type="button" class="btn btn-sm btn-primary" (click)="onSave()">
-            <i class="fas fa-save"></i> Save Calculation
-          </button>
+          <div>
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeDialog()">
+              Cancel
+            </button>
+          </div>
+          <div>
+            <button type="button" class="btn btn-sm btn-secondary me-2" (click)="addRow()">
+              <i class="fas fa-plus"></i> Add Row
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" [disabled]="isFormArrayInvalid()" (click)="onSave()">
+              <i class="fas fa-save"></i> Save Calculation
+            </button>
+          </div>
         </div>
       </form>
     </div>
