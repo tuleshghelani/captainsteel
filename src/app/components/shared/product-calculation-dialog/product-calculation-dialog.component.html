@@ -49,13 +49,13 @@
                     <span *ngIf="row.get('nos')?.errors?.['min']">Value must be greater than 0.</span>
                   </div>
                 </td>
-                <td>
+                <td class="table-col">
                   <input type="number" formControlName="runningFeet" class="form-control" readonly>
                 </td>
-                <td>
+                <td class="table-col">
                   <input type="number" formControlName="sqFeet" class="form-control" readonly>
                 </td>
-                <td>
+                <td class="table-col">
                   <input type="number" [value]="row.get('weight')?.value | number:'1.3-3'" formControlName="weight" class="form-control" readonly>
                 </td>
                 <td class="pt-0">
@@ -75,8 +75,8 @@
                 <td>{{ totals.totalFeet }}</td>
                 <td>{{ totals.totalInch }}</td>
                 <td>{{ totals.totalNos }}</td>
-                <td>{{ totals.totalRunningFeet }}</td>
-                <td>{{ totals.totalSqFeet }}</td>
+                <td>{{ totals.totalRunningFeet | number:'1.3-3' }}</td>
+                <td>{{ totals.totalSqFeet | number:'1.3-3' }}</td>
                 <td>{{ totals.totalWeight | number:'1.3-3' }}</td>
                 <td></td>
               </tr>

@@ -134,7 +134,20 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       price: [initialData?.price || 0, [Validators.required, Validators.min(0.01)]],
       taxPercentage: [{ value: 18, disabled: true }],
       finalPrice: [{ value: initialData?.finalPrice || 0, disabled: true }],
-      calculations: [[]]
+      calculations: this.fb.array(initialData.calculations.map((item:any) => this.createCalculationGroup(item)))
+    });
+  }
+
+
+  createCalculationGroup(item: any): FormGroup {
+    return this.fb.group({
+      feet: [item.feet, Validators.required],
+      nos: [item.nos, Validators.required],
+      weight: [item.weight, Validators.required],
+      id: [item?.id],
+      inch: [item.inch, Validators.required],
+      sqFeet: [item.sqFeet, Validators.required],
+      runningFeet: [item.runningFeet, Validators.required]
     });
   }
 
@@ -160,9 +173,9 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       quantity: [1, [Validators.required, Validators.min(1)]],
       unitPrice: [0, [Validators.required, Validators.min(0.01)]],
       discountPercentage: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
-      price: [{ value: 0, disabled: true }],
-      taxPercentage: [{ value: 18, disabled: true }],
-      finalPrice: [{ value: 0, disabled: true }],
+      price: [0],
+      taxPercentage: [18],
+      finalPrice: [],
       calculations: [[]]
     });
     this.setupItemCalculations(itemGroup, this.itemsFormArray.length);
@@ -207,6 +220,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       finalPrice: Number(finalPrice.toFixed(2))
     }, { emitEvent: false });
 
+    group?.updateValueAndValidity();
     this.calculateTotalAmount();
     this.cdr.detectChanges();
   }
@@ -221,7 +235,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     this.productService.getProducts({ status: 'A' }).subscribe({
       next: (response) => {
         if (response.success) {
-          console.log('All products >>>',response.data)
+          // console.log('All products >>>',response.data)
           this.products = response.data;
         }
         this.isLoadingProducts = false;
@@ -427,10 +441,13 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
         if (result) {
           itemGroup.patchValue({
             weight: result.totalWeight,
-            quantity: result.totalSqFeet,
-            calculations: result.calculations
+            quantity: Math.round(result.totalSqFeet)
           });
+          itemGroup.setControl(
+            'calculations', this.fb.array(result.calculations.map((item:any) => this.createCalculationGroup(item))
+          ))
           itemGroup.updateValueAndValidity();
+          this.itemsFormArray.updateValueAndValidity();
           this.calculateItemPrice(index);
         }
       });
@@ -467,6 +484,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
           if (response) {
             this.quotationId = parseInt(quotationId);
             this.isEdit = true;
+            console.log('edit response >>',response.data)
             this.populateForm(response.data);
           }
           this.isLoading = false;
@@ -484,7 +502,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
     }
   }
 
-  private populateForm(data: any): void {
+  async populateForm(data: any) {
     if (!data) return;
 
     // Clear existing items first
@@ -499,12 +517,14 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       quoteDate: data.quoteDate,
       validUntil: data.validUntil,
       remarks: data.remarks || '',
-      termsConditions: data.termsConditions || ''
+      termsConditions: data.termsConditions || '',
+      address: data.address,
+      contactNumber: data.contactNumber
     });
 
     // Add items
     if (data.items && Array.isArray(data.items)) {
-      data.items.forEach((item: any) => {
+      await data.items.forEach((item: any) => {
         const itemGroup = this.createItemFormGroup({
           productId: item.productId,
           quantity: item.quantity,
@@ -512,12 +532,18 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
           taxPercentage: item.taxPercentage,
           price: item.price,
           discountPercentage: item.discountPercentage,
-          finalPrice: item.finalPrice
+          finalPrice: item.finalPrice,
+          productType: item.productType,
+          calculationType: item.calculationType,
+          weight: item.weight,
+          calculations: item.calculations
         });
         this.setupItemCalculations(itemGroup, this.itemsFormArray.length);
         this.itemsFormArray.push(itemGroup);
       });
     }
+    this.calculateTotalAmount();
+    this.cdr.detectChanges();
   }
 
   onSubmit(): void {

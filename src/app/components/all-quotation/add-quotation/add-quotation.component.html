@@ -271,7 +271,7 @@
         </button>
         <button type="submit" class="btn btn-sm btn-primary" [disabled]="quotationForm.invalid || loading">
           <i class="fas" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-save'"></i>
-          {{ loading ? 'Saving...' : 'Save Quotation' }}
+          {{ isEdit ? loading ?  'Updating...' : 'Update Quotation' : loading ? 'Saving...' : 'Save Quotation' }}
         </button>
       </div>
     </form>
