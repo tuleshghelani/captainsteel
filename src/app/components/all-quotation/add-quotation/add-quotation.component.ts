@@ -150,7 +150,11 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       runningFeet: [item.runningFeet, Validators.required]
     });
   }
-
+  
+  get isCustomerIdSelected(){
+    return this.quotationForm?.get('customerId')?.value
+  }
+  
   private setupCustomerNameSync() {
     this.quotationForm.get('customerId')?.valueChanges
       .pipe(takeUntil(this.destroy$))
