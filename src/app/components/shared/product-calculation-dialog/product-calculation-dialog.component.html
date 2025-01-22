@@ -31,14 +31,15 @@
                   <input type="number" formControlName="feet" class="form-control" min="0">
                   <div *ngIf="row.get('feet')?.invalid && row.get('feet')?.touched" class="error">
                     <span *ngIf="row.get('feet')?.errors?.['required']" class="ps-3">Feet is required.</span>
-                    <span *ngIf="row.get('feet')?.errors?.['min']">Value must be greater than 0.</span>
                   </div>
                 </td>
                 <td class="table-col">
                   <input type="number" formControlName="inch" class="form-control" min="0">
                   <div *ngIf="row.get('inch')?.invalid && row.get('inch')?.touched" class="error">
                     <span *ngIf="row.get('inch')?.errors?.['required']" class="ps-3">Inch is required.</span>
-                    <span *ngIf="row.get('inch')?.errors?.['min']">Value must be greater than 0.</span>
+                  </div>
+                  <div *ngIf="row.errors?.['bothZero'] && (row.get('feet')?.touched || row.get('inch')?.touched)" class="error">
+                    <span class="ps-3">Either feet or inch must be greater than 0.</span>
                   </div>
                 </td>
                 <td class="table-col">

@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Product, ProductCalculationType } from '../../../models/product.model';
 import { ProductCalculation, ProductCalculationTotal } from '../../../models/product-calculation.model';
 import { CommonModule } from '@angular/common';
@@ -56,13 +56,13 @@ export class ProductCalculationDialogComponent {
 
   addRow(): void {
     const row = this.fb.group({
-      feet: [1, [Validators.required, Validators.min(1)]],
-      inch: [1, [Validators.required, Validators.min(1)]],
+      feet: [0, [Validators.required, Validators.min(0)]],
+      inch: [0, [Validators.required, Validators.min(0)]],
       nos: [1, [Validators.required, Validators.min(1)]],
       runningFeet: [{value: 0, disabled: true}],
       sqFeet: [{value: 0, disabled: true}],
       weight: [{value: 0, disabled: true}]
-    });
+    }, { validators: this.feetInchValidator() });
 
     row.valueChanges.subscribe(() => this.calculateRow(this.calculationsArray.controls.indexOf(row)));
     this.calculationsArray.push(row);
@@ -131,7 +131,8 @@ export class ProductCalculationDialogComponent {
         runningFeet: [{value: calc.runningFeet, disabled: true}],
         sqFeet: [{value: calc.sqFeet, disabled: true}],
         weight: [{value: calc.weight, disabled: true}]
-      });
+      }, { validators: this.feetInchValidator() });
+      
       row.valueChanges.subscribe(() => this.calculateRow(this.calculationsArray.controls.indexOf(row)));
       this.calculationsArray.push(row);
     });
@@ -155,5 +156,17 @@ export class ProductCalculationDialogComponent {
 
   closeDialog(): void {
     this.dialogRef.close();
+  }
+
+  private feetInchValidator(): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const feet = group.get('feet')?.value || 0;
+      const inch = group.get('inch')?.value || 0;
+
+      if (feet === 0 && inch === 0) {
+        return { bothZero: true };
+      }
+      return null;
+    };
   }
 } 
