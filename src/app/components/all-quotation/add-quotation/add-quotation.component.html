@@ -42,7 +42,7 @@
                 <i class="fas fa-user-tag"></i> Customer Name <span class="required">*</span>
               </label>
               <input type="text" formControlName="customerName" class="form-control"
-                [class.is-invalid]="isFieldInvalid('customerName')" placeholder="Enter customer name" [readonly]="isCustomerIdSelected()">
+                [class.is-invalid]="isFieldInvalid('customerName')" placeholder="Enter customer name" [readonly]="isCustomerIdSelected">
               <div class="invalid-feedback" *ngIf="isFieldInvalid('customerName')">
                 Customer name is required
               </div>
