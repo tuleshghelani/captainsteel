@@ -131,7 +131,7 @@ export class AddQuotationComponent implements OnInit, OnDestroy {
       weight: [{ value: initialData?.weight || 0, disabled: true }],
       unitPrice: [initialData?.unitPrice || 0, [Validators.required, Validators.min(0.01)]],
       discountPercentage: [initialData?.discountPercentage || 0, [Validators.required, Validators.min(0), Validators.max(100)]],
-      price: [initialData?.price || 0, [Validators.required, Validators.min(0.01)]],
+      price: [initialData?.price || 0], //[Validators.required, Validators.min(0.01)]
       taxPercentage: [{ value: 18, disabled: true }],
       finalPrice: [{ value: initialData?.finalPrice || 0, disabled: true }],
       calculations: this.fb.array(initialData.calculations.map((item:any) => this.createCalculationGroup(item)))
